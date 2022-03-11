@@ -8,6 +8,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
 public class Model {
@@ -15,6 +16,9 @@ public class Model {
 	private int VBOid;
 	private int TEXVBOid;
 	private int INDid;
+	
+	private int bbINDid;
+	private int bbPINDid;
 	
 	private float x;
 	private float y;
@@ -27,7 +31,7 @@ public class Model {
 	
 	public Texture tex;
 	public Shader shader;
-	public Camera camera;
+	public Shader bbShader;
 	
 	private Matrix4f scale;
 	private Matrix4f rotation;
@@ -40,9 +44,12 @@ public class Model {
 	
 	private float animationSpeed;
 	
-	public Model(Camera camera) {
+	private float borderX;
+	private float borderY;
+	
+	public Model() {
 		
-		float [] vertices = new float[] {
+		float[] vertices = new float[] {
 			-0.5f,  0.5f, // TOP LEFT
 			 0.5f,  0.5f, // TOP RIGHT
 			-0.5f, -0.5f, // BOTTOM LEFT
@@ -50,7 +57,7 @@ public class Model {
 		};
 			
 			
-		float [] textureUV = new float[] {
+		float[] textureUV = new float[] {
 			0, 0,
 			1, 0,
 			0, 1,
@@ -61,6 +68,17 @@ public class Model {
 		int[] indices = new int[] {
 			0, 1, 2,
 			2, 1, 3
+		};
+		
+		int[] bbIndices = new int[] {
+				0, 1,
+				1, 3,
+				3, 2,
+				2, 0
+		};
+		
+		int[] bbPointIndices = new int[] {
+				0, 1, 2, 3
 		};
 		
 		
@@ -84,11 +102,30 @@ public class Model {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.INDid);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 
+		
+		buffer = BufferUtils.createIntBuffer(bbIndices.length);
+		buffer.put(bbIndices);
+		buffer.flip();
+		
+		this.bbINDid = glGenBuffers();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.bbINDid);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbIndices, GL_STATIC_DRAW);
+		
+		buffer = BufferUtils.createIntBuffer(bbPointIndices.length);
+		buffer.put(bbPointIndices);
+		buffer.flip();
+		
+		this.bbPINDid = glGenBuffers();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.bbPINDid);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, bbPointIndices, GL_STATIC_DRAW);
+		
+		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		
 		this.tex = new Texture();
-		this.shader = new Shader("shader");
+		this.shader = new Shader("entity/shader");
+		this.bbShader = new Shader("bb/shader");
 		
 		this.scaleMul = 256;
 		
@@ -98,8 +135,6 @@ public class Model {
 		
 		this.target = new Matrix4f();
 		
-		this.camera = camera;
-		
 		this.animationSteps = 0;
 		
 		this.animationPosition = 0;
@@ -107,34 +142,46 @@ public class Model {
 		this.counter = 0;
 		
 		this.animationSpeed = 1.0f;
+		
+		this.borderX = 0;
+		this.borderY = 0;
 	}
 	
-	public void render() {
-//		if (this.animationSteps != 0 && this.counter % 30 == 0) {
-//			this.updateAnimation();
-//		}
-		
-		// this.counter++;
-		
+	public void render(Camera camera, boolean debug) {
 		this.getProjection();
 		
 		this.tex.bind(0);
-		this.shader.bind();
-		this.shader.setUniform("sampler", 0);
-		this.shader.setUniform("projection", this.camera.getProjection().mul(this.target));
 		
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		
+		this.shader.bind();
+		this.shader.setUniform("sampler", 0);
+		this.shader.setUniform("projection", camera.getProjection().mul(this.target));
+	
 		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
 		
 		glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
 		glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-		
+
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.INDid);
-		
+	
 		glDrawElements(GL_TRIANGLES, this.drawCount, GL_UNSIGNED_INT, 0);
+		
+		if (debug) {
+			this.bbShader.bind();
+			this.bbShader.setUniform("projection", camera.getProjection().mul(this.target));
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.bbPINDid);
+			
+			glPointSize(10.0f);
+			glDrawElements(GL_POINTS, 4, GL_UNSIGNED_INT, 0);
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.bbINDid);
+			
+			glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
+		}
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -251,27 +298,24 @@ public class Model {
 	public void adaptToSheet(int steps) {
 		this.animationSteps = steps;
 		
-		float x;
-		float y;
-		
 		float spriteWidth = (float)this.tex.getWidth() / this.animationSteps;
 		
 		if (spriteWidth > this.tex.getHeight()) {
-			x = 0.5f;
-			y = x * ((float)this.tex.getHeight() / spriteWidth);
+			this.borderX = 0.5f;
+			this.borderY = this.borderX * ((float)this.tex.getHeight() / spriteWidth);
 		} else if (spriteWidth < this.tex.getHeight()) {
-			y = 0.5f;
-			x = y * (spriteWidth / (float)this.tex.getHeight());
+			this.borderY = 0.5f;
+			this.borderX = y * (spriteWidth / (float)this.tex.getHeight());
 		} else {
-			x = 0.5f;
-			y = 0.5f;
+			this.borderX = 0.5f;
+			this.borderY = 0.5f;
 		}
 		
 		float [] vertices = new float[] {
-				-x,  y, // TOP LEFT
-				 x,  y, // TOP RIGHT
-				-x, -y, // BOTTOM LEFT
-				 x, -y  // BOTTOM RIGHT
+				-this.borderX,  this.borderY, // TOP LEFT
+				 this.borderX,  this.borderY, // TOP RIGHT
+				-this.borderX, -this.borderY, // BOTTOM LEFT
+				 this.borderX, -this.borderY  // BOTTOM RIGHT
 		};
 		
 		this.VBOid = glGenBuffers();
@@ -292,28 +336,80 @@ public class Model {
 	
 	
 	public void updateAnimation() {
-		this.counter++;
-		if ((float)this.counter % Math.round(60 / this.animationSpeed) == 0) {
-			float [] textureUV = new float[] {
-					1f / this.animationSteps * this.animationPosition,       0,
-					1f / this.animationSteps * (this.animationPosition + 1), 0,
-					1f / this.animationSteps * this.animationPosition,       1,
-					1f / this.animationSteps * (this.animationPosition + 1), 1
-			};
+		if (this.animationSteps != 0) {
+			this.counter++;
 			
-			this.animationPosition++;
-			
-			if (this.animationPosition == this.animationSteps) {
-				this.animationPosition = 0;
+			if ((float)this.counter % Math.round(60 / this.animationSpeed) == 0) {
+				float [] textureUV = new float[] {
+						1f / this.animationSteps * this.animationPosition,       0,
+						1f / this.animationSteps * (this.animationPosition + 1), 0,
+						1f / this.animationSteps * this.animationPosition,       1,
+						1f / this.animationSteps * (this.animationPosition + 1), 1
+				};
+				
+				this.animationPosition++;
+				
+				if (this.animationPosition == this.animationSteps) {
+					this.animationPosition = 0;
+				}
+				
+				this.TEXVBOid = glGenBuffers();
+				glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
+				glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
 			}
-			
-			this.TEXVBOid = glGenBuffers();
-			glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
-			glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
 		}
 	}
 	
 	public void setAnimationSpeed(float animationSpeed) {
 		this.animationSpeed = animationSpeed;
 	}
+	
+	
+	
+	
+	public Vector4f calculateBoundingBox() {
+		this.getProjection();
+		
+		Vector4f position = new Vector4f(this.borderX, this.borderY, 1, 1);
+		
+		position.mul(this.target, position);
+		
+//		System.out.println("Bounding Box: (" + position.x + ", " + position.y + ")");
+		
+		return(position);
+	}
+	
+	public void renderBoundingBox(Camera camera) {
+		this.bbShader.bind();
+
+		
+//		Vector4f position = new Vector4f(this.borderX, this.borderY, 1, 1);
+//		
+////		this.getProjection();
+//		this.target = new Matrix4f();
+//		
+////		this.target.mul(this.translation, this.target);
+//		this.target.mul(this.rotation, this.target);
+//		this.target.mul(this.scale, this.target);
+//		
+//		Matrix4f calculated = this.target.mul(camera.getProjection());
+//		
+//		position.mul(calculated);
+//		
+//		System.out.println("BB: (" + position.x + ", " + position.y + ")");
+//		
+//		glPointSize(10.0f);
+//		
+//		glColor3f(1.0f, 0.0f, 0.0f);
+//		
+//		glBegin(GL_POINTS);
+//			glVertex3f(position.x, position.y, 1.0f);
+//			glVertex3f(position.x, -position.y, 1.0f);
+//			glVertex3f(-position.x, position.y, 1.0f);
+//			glVertex3f(-position.x, -position.y, 1.0f);
+////			glVertex3f(0.0f, 0.0f, 0.0f);
+//		glEnd();
+	}
+	
+	
 }

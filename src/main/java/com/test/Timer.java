@@ -54,10 +54,10 @@ public class Timer {
 		return(answer);
 	}
 	
-	public void fps() {
+	public void fps(double time) {
 		if (this.frameTime >= 1.0) {
 			this.frameTime = 0;
-			System.out.println("FPS: " + frames);
+			System.out.println("FPS: " + frames + " | Frame ms: " + time + " | RFPS: " + Math.round((((double)1 / (time / (double)1000)) * (double)100))/ (double)100);
 			this.frames = 0;
 		}
 		
