@@ -6,6 +6,8 @@ import static org.lwjgl.opengl.GL20.*;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -22,6 +24,10 @@ public class Model {
 	
 	private float x;
 	private float y;
+	
+	private float prevX;
+	private float prevY;
+	
 	private float rotationValue;
 	private float scaleValue;
 	
@@ -145,6 +151,9 @@ public class Model {
 		
 		this.borderX = 0;
 		this.borderY = 0;
+		
+		this.prevX = 0;
+		this.prevY = 0;
 	}
 	
 	public void render(Camera camera, boolean debug) {
@@ -210,6 +219,16 @@ public class Model {
 	}
 	
 	public void setPosition(float x, float y) {
+		this.prevX = this.x;
+		this.prevY = this.y;
+		
+		this.x = x;
+		this.y = y;
+		
+		this.translation = new Matrix4f().translate(this.x, this.y, 0);
+	}
+	
+	public void rollbackPosition(float x, float y) {
 		this.x = x;
 		this.y = y;
 		
@@ -269,25 +288,23 @@ public class Model {
 	
 	
 	public void adaptToTexture() {
-		float x;
-		float y;
 		
 		if (this.tex.getWidth() > this.tex.getHeight()) {
-			x = 0.5f;
-			y = x * ((float)this.tex.getHeight() / (float)this.tex.getWidth());
+			this.borderX = 0.5f;
+			this.borderY = this.borderX * ((float)this.tex.getHeight() / (float)this.tex.getWidth());
 		} else if (this.tex.getWidth() < this.tex.getHeight()) {
-			y = 0.5f;
-			x = y * ((float)this.tex.getWidth() / (float)this.tex.getHeight());
+			this.borderY = 0.5f;
+			this.borderX = this.borderY * ((float)this.tex.getWidth() / (float)this.tex.getHeight());
 		} else {
-			x = 0.5f;
-			y = 0.5f;
+			this.borderX = 0.5f;
+			this.borderY = 0.5f;
 		}
 		
 		float [] vertices = new float[] {
-				-x,  y, // TOP LEFT
-				 x,  y, // TOP RIGHT
-				-x, -y, // BOTTOM LEFT
-				 x, -y  // BOTTOM RIGHT
+				-this.borderX,  this.borderY, // TOP LEFT
+				 this.borderX,  this.borderY, // TOP RIGHT
+				-this.borderX, -this.borderY, // BOTTOM LEFT
+				 this.borderX, -this.borderY  // BOTTOM RIGHT
 		};
 		
 		this.VBOid = glGenBuffers();
@@ -365,51 +382,65 @@ public class Model {
 	}
 	
 	
+	public float getPrevX() {
+		return(this.prevX);
+	}
 	
+	public float getPrevY() {
+		return(this.prevY);
+	}
 	
-	public Vector4f calculateBoundingBox() {
+	public List<Vector4f> calculateBoundingBox() {
 		this.getProjection();
 		
-		Vector4f position = new Vector4f(this.borderX, this.borderY, 1, 1);
+		Vector4f position1 = new Vector4f( this.borderX,  this.borderY, 1, 1);
+		Vector4f position2 = new Vector4f( this.borderX, -this.borderY, 1, 1);
+		Vector4f position3 = new Vector4f(-this.borderX, -this.borderY, 1, 1);
+		Vector4f position4 = new Vector4f(-this.borderX,  this.borderY, 1, 1);
 		
-		position.mul(this.target, position);
+		position1.mul(this.target, position1);
+		position2.mul(this.target, position2);
+		position3.mul(this.target, position3);
+		position4.mul(this.target, position4);
+		
+		List<Vector4f> boundingPoints = new ArrayList();
+		
+		boundingPoints.add(position1);
+		boundingPoints.add(position2);
+		boundingPoints.add(position3);
+		boundingPoints.add(position4);
 		
 //		System.out.println("Bounding Box: (" + position.x + ", " + position.y + ")");
 		
-		return(position);
+		return(boundingPoints);
 	}
 	
-	public void renderBoundingBox(Camera camera) {
-		this.bbShader.bind();
-
+	public List<Vector4f> calculatePrevBoundingBox() {
+		Vector4f position1 = new Vector4f( this.borderX,  this.borderY, 1, 1);
+		Vector4f position2 = new Vector4f( this.borderX, -this.borderY, 1, 1);
+		Vector4f position3 = new Vector4f(-this.borderX, -this.borderY, 1, 1);
+		Vector4f position4 = new Vector4f(-this.borderX,  this.borderY, 1, 1);
 		
-//		Vector4f position = new Vector4f(this.borderX, this.borderY, 1, 1);
-//		
-////		this.getProjection();
-//		this.target = new Matrix4f();
-//		
-////		this.target.mul(this.translation, this.target);
-//		this.target.mul(this.rotation, this.target);
-//		this.target.mul(this.scale, this.target);
-//		
-//		Matrix4f calculated = this.target.mul(camera.getProjection());
-//		
-//		position.mul(calculated);
-//		
-//		System.out.println("BB: (" + position.x + ", " + position.y + ")");
-//		
-//		glPointSize(10.0f);
-//		
-//		glColor3f(1.0f, 0.0f, 0.0f);
-//		
-//		glBegin(GL_POINTS);
-//			glVertex3f(position.x, position.y, 1.0f);
-//			glVertex3f(position.x, -position.y, 1.0f);
-//			glVertex3f(-position.x, position.y, 1.0f);
-//			glVertex3f(-position.x, -position.y, 1.0f);
-////			glVertex3f(0.0f, 0.0f, 0.0f);
-//		glEnd();
+		Matrix4f prevTarget = new Matrix4f();
+		
+		prevTarget.mul(new Matrix4f().translate(this.prevX, this.prevY, 0), prevTarget);
+		prevTarget.mul(this.rotation, prevTarget);
+		prevTarget.mul(this.scale, prevTarget);
+		
+		position1.mul(prevTarget, position1);
+		position2.mul(prevTarget, position2);
+		position3.mul(prevTarget, position3);
+		position4.mul(prevTarget, position4);
+		
+		List<Vector4f> boundingPoints = new ArrayList();
+		
+		boundingPoints.add(position1);
+		boundingPoints.add(position2);
+		boundingPoints.add(position3);
+		boundingPoints.add(position4);
+		
+		return(boundingPoints);
 	}
-	
+
 	
 }

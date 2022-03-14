@@ -37,7 +37,7 @@ public class Game {
 		
 		this.loadStartingEntities();
 		
-		this.controller = new Controller(this.engine.getCamera(), this.getEntityBuffer().get(1), this.engine);
+		this.controller = new Controller(this.engine.getCamera(), this.findByName("player", this.entityBuffer), this.engine);
 	}
 	
 	public void loop() {
@@ -64,10 +64,21 @@ public class Game {
 		
 //		System.out.println("Player: (" + this.entityBuffer.get(1).model.getX() + ", " + this.entityBuffer.get(1).model.getY() + ")");
 		
-		this.entityBuffer.get(1).model.calculateBoundingBox();
+//		for (int i = 0; i < this.entityBuffer.size(); i++) {
+			this.entityBuffer.get(1).calculatePosition();
+//		}
+		
+//		this.entityBuffer.get(1).model.calculateBoundingBox();
 		
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
-//			this.entityBuffer.get(i).model.drawBoundingBox();
+			if (i != 0) {
+				this.entityBuffer.get(i).checkCollision(this.entityBuffer);
+			}
+			
+			
+			
+//			this.entityBuffer.get(i).calculateForces();
+			
 			this.entityBuffer.get(i).model.updateAnimation();
 		}
 	}
@@ -98,27 +109,52 @@ public class Game {
 	
 	private void loadStartingEntities() {
 		Entity background = new Entity();
+		Entity foreground = new Entity();
 		Entity player = new Entity();
 		Entity pengu = new Entity();
 		
 		player.setName("player");
 		background.setName("background");
+		foreground.setName("foreground");
 		pengu.setName("Heart Pengu");
 		
-		background.model.loadTextureAndAdapt("./assets/textures/background.png");
+		background.model.loadTextureAndAdapt("./assets/textures/stars.jpg");
 		background.model.setScale(3.0f);
+		background.setCollision(false);
 		
+		foreground.model.loadTextureAndAdapt("./assets/textures/ground.png");
+		foreground.model.setScale(3.0f);
+		foreground.model.setPosition(0, -160);
+		foreground.model.setPosition(0, -160);
+
 		player.model.loadAnimationAndAdapt("./assets/textures/blob.png", 3);
 		player.model.setAnimationSpeed(5f);
+		player.model.setPosition(-50, 100);
 		player.model.setScale(0.5f);
 		
 		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2);
 		pengu.model.setAnimationSpeed(1f);
-		pengu.model.setPosition(0, -58f);
+		pengu.model.setPosition(150, 120);
+		pengu.model.setPosition(150, 120);
 		
 		
 		this.entityBuffer.add(background);
+//		this.entityBuffer.add(foreground);
 		this.entityBuffer.add(player);
 		this.entityBuffer.add(pengu);
+		
+	}
+	
+	
+	public Entity findByName(String name, List<Entity> entityBuffer) {
+		
+		for (int i = 0; i < entityBuffer.size(); i++) {
+			if (entityBuffer.get(i).getName() == name) {
+				return(entityBuffer.get(i));
+			}
+		}
+		
+		
+		return(null);
 	}
 }
