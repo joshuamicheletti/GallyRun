@@ -14,15 +14,18 @@ public class Controller {
 	
 	private boolean pressedB;
 	
+	private boolean pressedSPACE;
+	
 	
 	public Controller(Camera camera, Entity player, Engine engine) {
 		this.camera = camera;
 		this.player = player;
 		this.engine = engine;
 		
-		this.speed = 50f;
+		this.speed = 20f;
 		
 		this.pressedB = false;
+		this.pressedSPACE = false;
 	}
 	
 	
@@ -96,6 +99,17 @@ public class Controller {
 		
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GL_TRUE) {
 			glfwSetWindowShouldClose(window, true);
+		}
+		
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GL_TRUE && !this.pressedSPACE) {
+			this.pressedSPACE = true;
+			
+//			if (this.player.canJump()) {
+				this.player.setVelocity(this.player.getVelocityX(), 0);
+				this.player.applyForce(0, 1400);
+//			}
+		} else if (glfwGetKey(window, GLFW_KEY_SPACE) != GL_TRUE) {
+			this.pressedSPACE = false;
 		}
 		
 		

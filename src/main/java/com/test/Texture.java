@@ -16,6 +16,7 @@ public class Texture {
 	private int id;
 	private int width;
 	private int height;
+	private int[] rawPixels;
 	
 	public Texture() {
 		this.id = glGenTextures();
@@ -43,20 +44,23 @@ public class Texture {
 			this.width = bi.getWidth();
 			this.height = bi.getHeight();
 			
-			int [] pixels_raw = new int[width * height * 4];
+			this.rawPixels = new int[width * height * 4];
 			
-			pixels_raw = bi.getRGB(0, 0, width, height, null, 0, width);
+			this.rawPixels = bi.getRGB(0, 0, width, height, null, 0, width);
 			
 			ByteBuffer pixels = BufferUtils.createByteBuffer(width * height * 4);
 			
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {
-					int pixel = pixels_raw[i * width + j];
+					int pixel = this.rawPixels[i * width + j];
 					
 					pixels.put((byte)((pixel >> 16) & 0xFF)); // red
 					pixels.put((byte)((pixel >>  8) & 0xFF)); // green
 					pixels.put((byte)((pixel >>  0) & 0xFF)); // blue
 					pixels.put((byte)((pixel >> 24) & 0xFF)); // alpha
+					
+					
+//					System.out.println("(" + ((pixel >> 16) & 0xFF) + ", " + ((pixel >> 8) & 0xFF) + ", " + ((pixel >> 0) & 0xFF) + ", " + ((pixel >> 24) & 0xFF) + ")");
 				}
 			}
 			
@@ -78,4 +82,9 @@ public class Texture {
 	public int getHeight() {
 		return(this.height);
 	}
+	
+	public int[] getPixels() {
+		return(this.rawPixels);
+	}
+
 }

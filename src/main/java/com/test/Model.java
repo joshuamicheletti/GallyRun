@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -52,6 +53,17 @@ public class Model {
 	
 	private float borderX;
 	private float borderY;
+	
+	private int animation;
+	
+	private int animationsCount;
+	
+	private int maxAnimationSteps;
+	
+	private List<Integer> animationFrames;
+	
+	private float bbScaleX;
+	private float bbScaleY;
 	
 	public Model() {
 		
@@ -154,6 +166,17 @@ public class Model {
 		
 		this.prevX = 0;
 		this.prevY = 0;
+		
+		this.animation = 0;
+		
+		this.animationsCount = 1;
+		
+		this.maxAnimationSteps = 0;
+		
+		this.animationFrames = new ArrayList();
+		
+		this.bbScaleX = 1;
+		this.bbScaleY = 1;
 	}
 	
 	public void render(Camera camera, boolean debug) {
@@ -280,10 +303,10 @@ public class Model {
 		this.adaptToTexture();
 	}
 	
-	public void loadAnimationAndAdapt(String filename, int steps) {
+	public void loadAnimationAndAdapt(String filename, int steps, int animations) {
 		this.tex.loadImage(filename);
 		
-		this.adaptToSheet(steps);
+		this.adaptToSheet(steps, animations);
 	}
 	
 	
@@ -312,27 +335,63 @@ public class Model {
 		glBufferData(GL_ARRAY_BUFFER, createBuffer(vertices), GL_STATIC_DRAW);
 	}
 	
-	public void adaptToSheet(int steps) {
+	public void adaptToSheet(int steps, int animations) {
 		this.animationSteps = steps;
+		this.maxAnimationSteps = steps;
+		this.animationsCount = animations;
 		
-		float spriteWidth = (float)this.tex.getWidth() / this.animationSteps;
+		int[] pixels = this.tex.getPixels();
 		
-		if (spriteWidth > this.tex.getHeight()) {
+//		i * width + j
+		
+		boolean found = false;
+		
+		for (int h = 0; h < this.animationsCount; h++) { // moving through animations
+			this.animationFrames.add(1);
+			
+			for (int w = 0; w < this.maxAnimationSteps; w++) { // moving through steps of animation
+				for (int i = h * (this.tex.getHeight() / this.animationsCount); (i < (h + 1) * (this.tex.getHeight() / this.animationsCount)) && !found; i++) { // moving through pixel rows
+					for (int j = w * (this.tex.getWidth() / this.maxAnimationSteps); (j < (w + 1) * (this.tex.getWidth() / this.maxAnimationSteps)) && !found; j++) { // moving through pixel columns
+						int pixel = pixels[i * this.tex.getWidth() + j];
+						
+						if (((pixel >> 24) & 0xFF) != 0) {
+							found = true;
+						}
+
+//						System.out.println("(" + ((pixel >> 16) & 0xFF) + ", " + ((pixel >> 8) & 0xFF) + ", " + ((pixel >> 0) & 0xFF) + ", " + ((pixel >> 24) & 0xFF) + ")");
+					} // column
+				} // row
+				
+				if (found) {
+					found = false;
+					this.animationFrames.set(h, w + 1);
+				}
+			} // animation step
+		} // animation
+		
+		for (int i = 0; i < this.animationFrames.size(); i++) {
+			System.out.println(this.animationFrames.get(i));
+		}
+		
+		
+		float spriteWidth = (float)this.tex.getWidth() / this.maxAnimationSteps;
+		
+		if (spriteWidth > (this.tex.getHeight() / (float)this.animationsCount)) {
 			this.borderX = 0.5f;
-			this.borderY = this.borderX * ((float)this.tex.getHeight() / spriteWidth);
-		} else if (spriteWidth < this.tex.getHeight()) {
+			this.borderY = this.borderX * (((float)this.tex.getHeight() / this.animationsCount) / spriteWidth);
+		} else if (spriteWidth < this.tex.getHeight() / (float)this.animationsCount) {
 			this.borderY = 0.5f;
-			this.borderX = y * (spriteWidth / (float)this.tex.getHeight());
+			this.borderX = y * (spriteWidth / ((float)this.tex.getHeight() / this.animationsCount));
 		} else {
 			this.borderX = 0.5f;
 			this.borderY = 0.5f;
 		}
 		
 		float [] vertices = new float[] {
-				-this.borderX,  this.borderY, // TOP LEFT
-				 this.borderX,  this.borderY, // TOP RIGHT
-				-this.borderX, -this.borderY, // BOTTOM LEFT
-				 this.borderX, -this.borderY  // BOTTOM RIGHT
+			-this.borderX,  this.borderY, // TOP LEFT
+			 this.borderX,  this.borderY, // TOP RIGHT
+			-this.borderX, -this.borderY, // BOTTOM LEFT
+			 this.borderX, -this.borderY  // BOTTOM RIGHT
 		};
 		
 		this.VBOid = glGenBuffers();
@@ -340,10 +399,10 @@ public class Model {
 		glBufferData(GL_ARRAY_BUFFER, createBuffer(vertices), GL_STATIC_DRAW);
 		
 		float [] textureUV = new float[] {
-				0,                        0,
-				1f / this.animationSteps, 0,
-				0,                        1,
-				1f / this.animationSteps, 1
+			0,                        0,
+			1f / this.animationSteps, 0,
+			0,                        1,
+			1f / this.animationSteps, 1
 		};
 		
 		this.TEXVBOid = glGenBuffers();
@@ -352,21 +411,33 @@ public class Model {
 	}
 	
 	
-	public void updateAnimation() {
+	public void updateAnimation(boolean direction) {
 		if (this.animationSteps != 0) {
 			this.counter++;
 			
-			if ((float)this.counter % Math.round(60 / this.animationSpeed) == 0) {
-				float [] textureUV = new float[] {
-						1f / this.animationSteps * this.animationPosition,       0,
-						1f / this.animationSteps * (this.animationPosition + 1), 0,
-						1f / this.animationSteps * this.animationPosition,       1,
-						1f / this.animationSteps * (this.animationPosition + 1), 1
-				};
-				
+			float [] textureUV;
+
+			if ((float)this.counter % Math.round(60 / this.animationSpeed) == 0) {		
+				if (direction == true) {												
+					textureUV = new float[] {										   
+							(1f / this.maxAnimationSteps) * this.animationPosition,       (1f / this.animationsCount) * (this.animation),
+							(1f / this.maxAnimationSteps) * (this.animationPosition + 1), (1f / this.animationsCount) * (this.animation),
+							(1f / this.maxAnimationSteps) * this.animationPosition,       (1f / this.animationsCount) * (this.animation + 1),
+							(1f / this.maxAnimationSteps) * (this.animationPosition + 1), (1f / this.animationsCount) * (this.animation + 1)
+					};
+
+				} else {
+					textureUV = new float[] {
+							(1f / this.maxAnimationSteps) * (this.animationPosition + 1), (1f / this.animationsCount) * (this.animation),
+							(1f / this.maxAnimationSteps) * this.animationPosition,       (1f / this.animationsCount) * (this.animation),
+							(1f / this.maxAnimationSteps) * (this.animationPosition + 1), (1f / this.animationsCount) * (this.animation + 1),
+							(1f / this.maxAnimationSteps) * this.animationPosition,       (1f / this.animationsCount) * (this.animation + 1)
+					};
+				}
+							
 				this.animationPosition++;
 				
-				if (this.animationPosition == this.animationSteps) {
+				if (this.animationPosition >= this.animationFrames.get(this.animation)) {
 					this.animationPosition = 0;
 				}
 				
@@ -375,6 +446,47 @@ public class Model {
 				glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
 			}
 		}
+	}
+	
+	public void setIdle() {
+		if (this.animation != 0) {
+			this.animation = 0;
+			this.animationPosition = 0;
+		}
+	}
+	
+	public void setRunning() {
+		if (this.animation != 1) {
+			this.animation = 1;
+			this.animationPosition = 0;
+		}
+	}
+	
+	public void setJumping() {
+		if (this.animation != 2) {
+			this.animation = 2;
+			this.animationPosition = 0;
+		}
+	}
+	
+	public void setMidAir() {
+		if (this.animation != 3) {
+			this.animation = 3;
+			this.animationPosition = 0;
+		}
+	}
+	
+	public void setFalling() {
+		if (this.animation != 4) {
+			this.animation = 4;
+			this.animationPosition = 0;
+		}
+	}
+	
+	
+	
+	public void setAnimations(int number) {
+		this.animationsCount = number;
 	}
 	
 	public void setAnimationSpeed(float animationSpeed) {
@@ -393,10 +505,10 @@ public class Model {
 	public List<Vector4f> calculateBoundingBox() {
 		this.getProjection();
 		
-		Vector4f position1 = new Vector4f( this.borderX,  this.borderY, 1, 1);
-		Vector4f position2 = new Vector4f( this.borderX, -this.borderY, 1, 1);
-		Vector4f position3 = new Vector4f(-this.borderX, -this.borderY, 1, 1);
-		Vector4f position4 = new Vector4f(-this.borderX,  this.borderY, 1, 1);
+		Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+		Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
 		
 		position1.mul(this.target, position1);
 		position2.mul(this.target, position2);
@@ -416,10 +528,10 @@ public class Model {
 	}
 	
 	public List<Vector4f> calculatePrevBoundingBox() {
-		Vector4f position1 = new Vector4f( this.borderX,  this.borderY, 1, 1);
-		Vector4f position2 = new Vector4f( this.borderX, -this.borderY, 1, 1);
-		Vector4f position3 = new Vector4f(-this.borderX, -this.borderY, 1, 1);
-		Vector4f position4 = new Vector4f(-this.borderX,  this.borderY, 1, 1);
+		Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+		Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
 		
 		Matrix4f prevTarget = new Matrix4f();
 		
@@ -442,5 +554,13 @@ public class Model {
 		return(boundingPoints);
 	}
 
+	public void setBBScale(float x, float y) {
+		this.bbScaleX = x;
+		this.bbScaleY = y;
+	}
+	
+	public List<Integer> getFrames() {
+		return(this.animationFrames);
+	}
 	
 }

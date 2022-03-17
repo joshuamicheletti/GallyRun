@@ -1,8 +1,10 @@
 package com.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.joml.Vector4f;
+import org.joml.Vector4i;
 
 public class Entity {
 	public Model model;
@@ -20,10 +22,17 @@ public class Entity {
 	private float velocityX;
 	private float velocityY;
 	
-	private float maxForceX;
-	private float maxForceY;
-	
 	private float airFriction;
+	
+	private float gravity;
+	
+	private float newPositionX;
+	private float newPositionY;
+	
+	private boolean airborne;
+	private boolean stuck;
+	
+	private boolean facingRight;
 	
 	public Entity() {
 		this.model = new Model();
@@ -38,10 +47,17 @@ public class Entity {
 		this.velocityX = 0;
 		this.velocityY = 0;
 		
-		this.maxForceX = 3.0f;
-		this.maxForceY = 3.0f;
-		
 		this.airFriction = 5f;
+		
+		this.gravity = 1.2f;
+		
+		this.newPositionX = 0;
+		this.newPositionY = 0;
+		
+		this.airborne = false;
+		this.stuck = false;
+		
+		this.facingRight = true;
 	}
 	
 	public void setName(String name) {
@@ -57,59 +73,68 @@ public class Entity {
 		
 		int contacts = 0;
 		
-//		System.out.println(this.name + ": (" + entityBB.get(0).x + ", " + entityBB.get(0).y + ")");
+		this.airborne = true;
+		this.stuck = false;
 		
 		for (int i = 0; i < entityBuffer.size(); i++) {
 			
 			if (this != entityBuffer.get(i) && entityBuffer.get(i).canCollide()) {
 				List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox();
 				
-//				System.out.println("Calculating " + this.name + " vs " + entityBuffer.get(i).getName());
 				
-				if (((entityBB.get(0).x >= objectBB.get(2).x && entityBB.get(0).x < objectBB.get(0).x) ||
-					( entityBB.get(2).x >= objectBB.get(2).x && entityBB.get(2).x < objectBB.get(0).x)) &&
-					((entityBB.get(0).y >= objectBB.get(2).y && entityBB.get(0).y < objectBB.get(0).y) ||
-					( entityBB.get(2).y >= objectBB.get(2).y && entityBB.get(2).y < objectBB.get(0).y))) {
-					
+				if (((entityBB.get(0).x >= objectBB.get(2).x && entityBB.get(0).x <  objectBB.get(0).x) ||
+					( entityBB.get(2).x >= objectBB.get(2).x && entityBB.get(2).x <  objectBB.get(0).x) ||
+					( entityBB.get(2).x <= objectBB.get(2).x && entityBB.get(0).x >= objectBB.get(0).x)) &&
+					((entityBB.get(0).y >= objectBB.get(2).y && entityBB.get(0).y <  objectBB.get(0).y) ||
+					( entityBB.get(2).y >= objectBB.get(2).y && entityBB.get(2).y <  objectBB.get(0).y) ||
+					( entityBB.get(2).y <= objectBB.get(2).y && entityBB.get(0).y >= objectBB.get(0).y))) {
+
 					contacts++;
 					
-					if (contacts <= 1) {
-						List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox();
-						
-						if ((prevEntityBB.get(0).x >= objectBB.get(2).x && prevEntityBB.get(0).x < objectBB.get(0).x) ||
-							(prevEntityBB.get(2).x >= objectBB.get(2).x && prevEntityBB.get(2).x < objectBB.get(0).x)) {
-							this.model.rollbackPosition(this.model.getX(), this.model.getPrevY());
+					List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox();
+					
+					
+					if ((prevEntityBB.get(0).x >= objectBB.get(2).x && prevEntityBB.get(0).x < objectBB.get(0).x) ||
+						(prevEntityBB.get(2).x >= objectBB.get(2).x && prevEntityBB.get(2).x < objectBB.get(0).x) ||
+						(prevEntityBB.get(2).x <= objectBB.get(2).x && prevEntityBB.get(0).x >= objectBB.get(0).x)) {
+						if (prevEntityBB.get(2).y >= objectBB.get(0).y) { // COMING FROM UP
+							this.newPositionY = objectBB.get(0).y + Math.abs(this.newPositionY - entityBB.get(2).y) + 0.001f;
+							this.airborne = false;
 						}
-						
-						else if ((prevEntityBB.get(0).y >= objectBB.get(2).y && prevEntityBB.get(0).y < objectBB.get(0).y) ||
-								 (prevEntityBB.get(2).y >= objectBB.get(2).y && prevEntityBB.get(2).y < objectBB.get(0).y)) {
-							this.model.rollbackPosition(this.model.getPrevX(), this.model.getY());
+						else if (prevEntityBB.get(0).y <= objectBB.get(2).y) { // COMING FROM DOWN
+							this.newPositionY = objectBB.get(2).y - Math.abs(entityBB.get(2).y - this.newPositionY) - 0.001f;
+							this.stuck = true;				
 						}
-						
-						else {
-							this.model.rollbackPosition(this.model.getPrevX(), this.model.getPrevY());
-						}
-					} else {
-						this.model.rollbackPosition(this.model.getPrevX(), this.model.getPrevY());
+						this.velocityY = 0;
 					}
 					
-					
-					
-					entityBB = this.model.calculateBoundingBox();
-					
-					
-					
-//					System.out.println("Calculating Collision for: " + this.name);
-					System.out.println(this.name + " collision with " + entityBuffer.get(i).getName());
-					
-					if (this.name == "player") {
-						System.out.println("Contacts: " + contacts);
+					else if ((prevEntityBB.get(0).y >= objectBB.get(2).y && prevEntityBB.get(0).y < objectBB.get(0).y) ||
+							 (prevEntityBB.get(2).y >= objectBB.get(2).y && prevEntityBB.get(2).y < objectBB.get(0).y) ||
+							 (prevEntityBB.get(2).y <= objectBB.get(2).y && prevEntityBB.get(0).y >= objectBB.get(0).y)) {
+						
+						if (prevEntityBB.get(0).x <= objectBB.get(2).x) { // COMING FROM LEFT
+							this.newPositionX = objectBB.get(2).x - Math.abs(this.model.getX() - entityBB.get(2).x) - 0.001f;
+						}
+						else if (prevEntityBB.get(2).x >= objectBB.get(0).x) { // COMING FROM RIGHT
+							this.newPositionX = objectBB.get(0).x + Math.abs(this.model.getX() - entityBB.get(2).x) + 0.001f;
+						}
+						this.velocityX = 0;
 					}
-//					System.out.println("Rolling back to: (" + this.model.getPrevX() + ", " + this.model.getPrevY() + ")");
 					
-//					this.model.setPosition(this.model.getPrevX(), this.model.getPrevY());
+					else {
+						this.newPositionX = this.model.getPrevX();
+						this.newPositionY = this.model.getPrevY();
+					}
 				}
-//				System.out.println(this.name + ": " + objectBB.x + " " + objectBB.y);
+				
+				if (objectBB.get(2).y >= entityBB.get(0).y && objectBB.get(2).y <= entityBB.get(0).y + 0.01f) {
+					this.stuck = true;
+				}
+			}
+			
+			if (contacts == 0) {
+				this.newPositionX = this.model.getX();
+				this.newPositionY = this.model.getY();
 			}
 		}
 	}
@@ -122,32 +147,36 @@ public class Entity {
 		return(this.canCollide);
 	}
 	
-	public void applyForce(float x, float y) {
-//		this.forceX += x;
-//		
-//		if (this.forceX > this.maxForceX) {
-//			this.forceX = this.maxForceX;
-//		}
-//		else if (this.forceX < -this.maxForceX) {
-//			this.forceX = -this.maxForceX;
-//		}
-//		
-//		this.forceY += y;
-//		
-//		if (this.forceY > this.maxForceY) {
-//			this.forceY = this.maxForceY;
-//		}
-//		else if (this.forceY < -this.maxForceY) {
-//			this.forceY = -this.maxForceY;
-//		}
-		
+	public void setForce(float x, float y) {
 		this.forceX = x;
 		this.forceY = y;
 	}
 	
-	public void applyForcePolar(float r, float teta) {
+	public void setForcePolar(float r, float teta) {
 		this.forceX = r * (float)Math.cos(teta);
 		this.forceY = r * (float)Math.sin(teta);
+	}
+	
+	public void applyForce(float x, float y) {
+		this.forceX += x;
+		this.forceY += y;
+		
+		if (this.forceX > 0) {
+			this.facingRight = true;
+		} else if (this.forceX < 0) {
+			this.facingRight = false;
+		}
+	}
+	
+	public void applyForcePolar(float r, float teta) {
+		this.forceX += r * (float)Math.cos(teta);
+		this.forceY += r * (float)Math.sin(teta);
+		
+		if (this.forceX > 0) {
+			this.facingRight = true;
+		} else if (this.forceX < 0) {
+			this.facingRight = false;
+		}
 	}
 	
 	public void calculatePosition() {
@@ -204,7 +233,7 @@ public class Entity {
 //		float totalForceX = this.accelerationX * this.mass + this.forceX + (this.airFriction * ((-this.accelerationX) * this.mass));
 		
 		float totalForceX = this.forceX + (this.airFriction * (-this.velocityX));
-		float totalForceY = this.forceY + (this.airFriction * (-this.velocityY));
+		float totalForceY = this.forceY + (this.airFriction * (-this.velocityY)) - (this.mass * this.gravity);
 		
 		this.accelerationX = totalForceX / this.mass;
 		this.accelerationY = totalForceY / this.mass;
@@ -235,7 +264,74 @@ public class Entity {
 		
 		this.model.setPosition(newPositionX, newPositionY);
 		
+		this.forceX = 0;
+		this.forceY = 0;
+		
 //		this.model.setPosition(this.model.getX() + this.velocityX, this.model.getY() + this.velocityY);
+	}
+	
+	public void setGravity(float gravity) {
+		this.gravity = gravity;
+	}
+
+	
+	public void applyNewPosition() {
+		this.model.setPosition(this.newPositionX, this.newPositionY);
+	}
+	
+	public void setNewPosition(float x, float y) {
+		this.newPositionX = x;
+		this.newPositionY = y;
+	}
+	
+	public void setVelocity(float x, float y) {
+		this.velocityX = x;
+		this.velocityY = y;
+	}
+	
+	public float getVelocityX() {
+		return(this.velocityX);
+	}
+	
+	public float getVelocityY() {
+		return(this.velocityY);
+	}
+	
+	public boolean canJump() {
+		return(!this.airborne && !this.stuck);
+	}
+
+	public void updateAnimation() {
+		if (this.airborne) {
+			float threshold = 2f;
+			
+			if (this.velocityY > threshold && this.model.getFrames().size() >= 3) {
+				this.model.setJumping();
+			} else if (this.velocityY >= -threshold && this.velocityY <= threshold  && this.model.getFrames().size() >= 4) {
+				this.model.setMidAir();
+			} else if (this.velocityY < -threshold  && this.model.getFrames().size() >= 5) {
+				this.model.setFalling();
+			}
+		} else {
+			
+			float threshold = 0.02f;
+			
+			if (this.velocityX < threshold && this.velocityX > -threshold) {
+				this.model.setIdle();
+			} else if (this.model.getFrames().size() >= 1){
+				this.model.setRunning();
+			}
+		}
+		
+		this.model.updateAnimation(this.facingRight);
+	}
+	
+	public void setOrientation(boolean direction) {
+		this.facingRight = direction;
+	}
+	
+	public boolean isFacingRight() {
+		return(this.facingRight);
 	}
 
 }

@@ -15,6 +15,7 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
 
 public class Game {
@@ -62,24 +63,22 @@ public class Game {
 	
 	public void updateEntities() {
 		
-//		System.out.println("Player: (" + this.entityBuffer.get(1).model.getX() + ", " + this.entityBuffer.get(1).model.getY() + ")");
-		
-//		for (int i = 0; i < this.entityBuffer.size(); i++) {
-			this.entityBuffer.get(1).calculatePosition();
-//		}
-		
-//		this.entityBuffer.get(1).model.calculateBoundingBox();
-		
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
+			this.entityBuffer.get(i).calculatePosition();
+			
 			if (i != 0) {
 				this.entityBuffer.get(i).checkCollision(this.entityBuffer);
 			}
 			
+			this.entityBuffer.get(i).applyNewPosition();
 			
+			Vector3f position = new Vector3f(-this.findByName("player", this.entityBuffer).model.getX(), -this.findByName("player", this.entityBuffer).model.getY(), 0);
 			
-//			this.entityBuffer.get(i).calculateForces();
+//			Vector3f position = new Vector3f(-this.findByName("player", this.entityBuffer).model.getX(),this.engine.camera.getPosition().y, 0);
 			
-			this.entityBuffer.get(i).model.updateAnimation();
+			this.engine.camera.setPosition(position);
+			
+			this.entityBuffer.get(i).updateAnimation();
 		}
 	}
 	
@@ -112,36 +111,75 @@ public class Game {
 		Entity foreground = new Entity();
 		Entity player = new Entity();
 		Entity pengu = new Entity();
+		Entity blob = new Entity();
+		Entity block = new Entity();
 		
 		player.setName("player");
 		background.setName("background");
 		foreground.setName("foreground");
 		pengu.setName("Heart Pengu");
+		blob.setName("blob");
+		block.setName("block");
 		
-		background.model.loadTextureAndAdapt("./assets/textures/stars.jpg");
+		
+		background.model.loadTextureAndAdapt("./assets/textures/grid.png");
 		background.model.setScale(3.0f);
 		background.setCollision(false);
+		background.setGravity(0);
 		
-		foreground.model.loadTextureAndAdapt("./assets/textures/ground.png");
+		foreground.model.loadTextureAndAdapt("./assets/textures/block1.png");
 		foreground.model.setScale(3.0f);
-		foreground.model.setPosition(0, -160);
-		foreground.model.setPosition(0, -160);
+		foreground.model.setPosition(0, -200);
+		foreground.model.setPosition(0, -200);
+		foreground.setNewPosition(0, -200);
+		foreground.setGravity(0);
 
-		player.model.loadAnimationAndAdapt("./assets/textures/blob.png", 3);
-		player.model.setAnimationSpeed(5f);
-		player.model.setPosition(-50, 100);
+		player.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 5);
+//		player.model.loadTextureAndAdapt("./assets/textures/gally.png");
+		player.model.setAnimationSpeed(10f);
+		player.model.setPosition(-50, 200);
+		player.setNewPosition(-50, 200);
 		player.model.setScale(0.5f);
+		player.model.setBBScale(0.85f, 1f);
 		
-		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2);
+//		player.setGravity(0);
+//		player.setGravity(-0.5f);
+//		pengu.model.setAnimations(1);
+		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2, 1);
 		pengu.model.setAnimationSpeed(1f);
 		pengu.model.setPosition(150, 120);
 		pengu.model.setPosition(150, 120);
 		
+//		blob.model.setAnimations(1);
+		blob.model.loadAnimationAndAdapt("./assets/textures/blob.png", 3, 1);
+		blob.model.setAnimationSpeed(5f);
+		blob.model.setPosition(-50f, 200);
+		blob.model.setScale(0.25f);
+		
+		block.model.loadTextureAndAdapt("./assets/textures/block1.png");
+		block.model.setPosition(-350, -20);
+		block.model.setPosition(-350, -20);
+		block.setGravity(0);
+
+		
 		
 		this.entityBuffer.add(background);
-//		this.entityBuffer.add(foreground);
+		this.entityBuffer.add(foreground);
 		this.entityBuffer.add(player);
-		this.entityBuffer.add(pengu);
+//		this.entityBuffer.add(pengu);
+		this.entityBuffer.add(blob);
+		this.entityBuffer.add(block);
+		
+//		for (int i = 0; i < 20; i++) {
+//			Entity entity = new Entity();
+//			
+//			entity.model.loadAnimationAndAdapt("./assets/textures/gally.png", 3);
+//			entity.model.setScale(0.25f);
+//			entity.model.setPosition(i % 5 * 120 + i, i * 120 + 200);
+//			entity.setNewPosition(i % 5 * 120 + i, i * 120 + 200);
+//			this.entityBuffer.add(entity);
+//			
+//		}
 		
 	}
 	
