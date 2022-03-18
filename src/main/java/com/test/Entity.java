@@ -34,6 +34,14 @@ public class Entity {
 	
 	private boolean facingRight;
 	
+	private boolean hitbox;
+	
+	private boolean idle;
+	
+	private boolean sleeping;
+	
+	private boolean goingToSleep;
+	
 	public Entity() {
 		this.model = new Model();
 		this.canCollide = true;
@@ -58,6 +66,14 @@ public class Entity {
 		this.stuck = false;
 		
 		this.facingRight = true;
+		
+		this.hitbox = false;
+		
+		this.idle = false;
+		
+		this.sleeping = false;
+		
+		this.goingToSleep = false;
 	}
 	
 	public void setName(String name) {
@@ -69,72 +85,75 @@ public class Entity {
 	}
 	
 	public void checkCollision(List<Entity> entityBuffer) {
-		List<Vector4f> entityBB = this.model.calculateBoundingBox();
-		
-		int contacts = 0;
-		
-		this.airborne = true;
-		this.stuck = false;
-		
-		for (int i = 0; i < entityBuffer.size(); i++) {
+		if (this.canCollide) {
 			
-			if (this != entityBuffer.get(i) && entityBuffer.get(i).canCollide()) {
-				List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox();
+			List<Vector4f> entityBB = this.model.calculateBoundingBox(this.hitbox);
+			
+			int contacts = 0;
+			
+			this.airborne = true;
+			this.stuck = false;
+			
+			for (int i = 0; i < entityBuffer.size(); i++) {
 				
-				
-				if (((entityBB.get(0).x >= objectBB.get(2).x && entityBB.get(0).x <  objectBB.get(0).x) ||
-					( entityBB.get(2).x >= objectBB.get(2).x && entityBB.get(2).x <  objectBB.get(0).x) ||
-					( entityBB.get(2).x <= objectBB.get(2).x && entityBB.get(0).x >= objectBB.get(0).x)) &&
-					((entityBB.get(0).y >= objectBB.get(2).y && entityBB.get(0).y <  objectBB.get(0).y) ||
-					( entityBB.get(2).y >= objectBB.get(2).y && entityBB.get(2).y <  objectBB.get(0).y) ||
-					( entityBB.get(2).y <= objectBB.get(2).y && entityBB.get(0).y >= objectBB.get(0).y))) {
+				if (this != entityBuffer.get(i) && entityBuffer.get(i).canCollide()) {
+					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(entityBuffer.get(i).getHitbox());
+					
+					
+					if (((entityBB.get(0).x >= objectBB.get(2).x && entityBB.get(0).x <  objectBB.get(0).x) ||
+						( entityBB.get(2).x >= objectBB.get(2).x && entityBB.get(2).x <  objectBB.get(0).x) ||
+						( entityBB.get(2).x <= objectBB.get(2).x && entityBB.get(0).x >= objectBB.get(0).x)) &&
+						((entityBB.get(0).y >= objectBB.get(2).y && entityBB.get(0).y <  objectBB.get(0).y) ||
+						( entityBB.get(2).y >= objectBB.get(2).y && entityBB.get(2).y <  objectBB.get(0).y) ||
+						( entityBB.get(2).y <= objectBB.get(2).y && entityBB.get(0).y >= objectBB.get(0).y))) {
 
-					contacts++;
-					
-					List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox();
-					
-					
-					if ((prevEntityBB.get(0).x >= objectBB.get(2).x && prevEntityBB.get(0).x < objectBB.get(0).x) ||
-						(prevEntityBB.get(2).x >= objectBB.get(2).x && prevEntityBB.get(2).x < objectBB.get(0).x) ||
-						(prevEntityBB.get(2).x <= objectBB.get(2).x && prevEntityBB.get(0).x >= objectBB.get(0).x)) {
-						if (prevEntityBB.get(2).y >= objectBB.get(0).y) { // COMING FROM UP
-							this.newPositionY = objectBB.get(0).y + Math.abs(this.newPositionY - entityBB.get(2).y) + 0.001f;
-							this.airborne = false;
-						}
-						else if (prevEntityBB.get(0).y <= objectBB.get(2).y) { // COMING FROM DOWN
-							this.newPositionY = objectBB.get(2).y - Math.abs(entityBB.get(2).y - this.newPositionY) - 0.001f;
-							this.stuck = true;				
-						}
-						this.velocityY = 0;
-					}
-					
-					else if ((prevEntityBB.get(0).y >= objectBB.get(2).y && prevEntityBB.get(0).y < objectBB.get(0).y) ||
-							 (prevEntityBB.get(2).y >= objectBB.get(2).y && prevEntityBB.get(2).y < objectBB.get(0).y) ||
-							 (prevEntityBB.get(2).y <= objectBB.get(2).y && prevEntityBB.get(0).y >= objectBB.get(0).y)) {
+						contacts++;
 						
-						if (prevEntityBB.get(0).x <= objectBB.get(2).x) { // COMING FROM LEFT
-							this.newPositionX = objectBB.get(2).x - Math.abs(this.model.getX() - entityBB.get(2).x) - 0.001f;
+						List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
+						
+						
+						if ((prevEntityBB.get(0).x >= objectBB.get(2).x && prevEntityBB.get(0).x < objectBB.get(0).x) ||
+							(prevEntityBB.get(2).x >= objectBB.get(2).x && prevEntityBB.get(2).x < objectBB.get(0).x) ||
+							(prevEntityBB.get(2).x <= objectBB.get(2).x && prevEntityBB.get(0).x >= objectBB.get(0).x)) {
+							if (prevEntityBB.get(2).y >= objectBB.get(0).y) { // COMING FROM UP
+								this.newPositionY = objectBB.get(0).y + Math.abs(this.newPositionY - entityBB.get(2).y) + 0.001f;
+								this.airborne = false;
+							}
+							else if (prevEntityBB.get(0).y <= objectBB.get(2).y) { // COMING FROM DOWN
+								this.newPositionY = objectBB.get(2).y - Math.abs(entityBB.get(2).y - this.newPositionY) - 0.001f;
+								this.stuck = true;				
+							}
+							this.velocityY = 0;
 						}
-						else if (prevEntityBB.get(2).x >= objectBB.get(0).x) { // COMING FROM RIGHT
-							this.newPositionX = objectBB.get(0).x + Math.abs(this.model.getX() - entityBB.get(2).x) + 0.001f;
+						
+						else if ((prevEntityBB.get(0).y >= objectBB.get(2).y && prevEntityBB.get(0).y < objectBB.get(0).y) ||
+								 (prevEntityBB.get(2).y >= objectBB.get(2).y && prevEntityBB.get(2).y < objectBB.get(0).y) ||
+								 (prevEntityBB.get(2).y <= objectBB.get(2).y && prevEntityBB.get(0).y >= objectBB.get(0).y)) {
+							
+							if (prevEntityBB.get(0).x <= objectBB.get(2).x) { // COMING FROM LEFT
+								this.newPositionX = objectBB.get(2).x - Math.abs(this.model.getX() - entityBB.get(2).x) - 0.001f;
+							}
+							else if (prevEntityBB.get(2).x >= objectBB.get(0).x) { // COMING FROM RIGHT
+								this.newPositionX = objectBB.get(0).x + Math.abs(this.model.getX() - entityBB.get(2).x) + 0.001f;
+							}
+							this.velocityX = 0;
 						}
-						this.velocityX = 0;
+						
+						else {
+							this.newPositionX = this.model.getPrevX();
+							this.newPositionY = this.model.getPrevY();
+						}
 					}
 					
-					else {
-						this.newPositionX = this.model.getPrevX();
-						this.newPositionY = this.model.getPrevY();
+					if (objectBB.get(2).y >= entityBB.get(0).y && objectBB.get(2).y <= entityBB.get(0).y + 0.01f) {
+						this.stuck = true;
 					}
 				}
 				
-				if (objectBB.get(2).y >= entityBB.get(0).y && objectBB.get(2).y <= entityBB.get(0).y + 0.01f) {
-					this.stuck = true;
+				if (contacts == 0) {
+					this.newPositionX = this.model.getX();
+					this.newPositionY = this.model.getY();
 				}
-			}
-			
-			if (contacts == 0) {
-				this.newPositionX = this.model.getX();
-				this.newPositionY = this.model.getY();
 			}
 		}
 	}
@@ -303,6 +322,8 @@ public class Entity {
 
 	public void updateAnimation() {
 		if (this.airborne) {
+			this.model.setAnimationSpeed(10f);
+			
 			float threshold = 2f;
 			
 			if (this.velocityY > threshold && this.model.getFrames().size() >= 3) {
@@ -313,17 +334,49 @@ public class Entity {
 				this.model.setFalling();
 			}
 		} else {
+			this.model.setAnimationSpeed(3f);
 			
 			float threshold = 0.02f;
-			
+	
 			if (this.velocityX < threshold && this.velocityX > -threshold) {
-				this.model.setIdle();
-			} else if (this.model.getFrames().size() >= 1){
+				if (this.idle) {
+					this.model.setAnimationSpeed(1f);
+					this.model.setIdle(this.idle);
+				} else if (this.goingToSleep) {
+					this.model.setAnimationSpeed(1f);
+					this.model.setGoingToSleep();
+				} else if (this.sleeping) {
+					this.model.setAnimationSpeed(1f);
+					this.model.setSleeping();
+				} else {
+					this.model.setIdle(false);
+				}
+		
+			} else if (this.model.getFrames().size() >= 1) {
+				this.model.setAnimationSpeed(3f);
 				this.model.setRunning();
 			}
 		}
 		
 		this.model.updateAnimation(this.facingRight);
+	}
+	
+	public void setIdle(boolean idle) {
+		this.idle = idle;
+		this.sleeping = false;
+		this.goingToSleep = false;
+	}
+	
+	public void setSleep(boolean sleep) {
+		this.sleeping = sleep;
+		this.idle = false;
+		this.goingToSleep = false;
+	}
+	
+	public void setGoingToSleep(boolean goingToSleep) {
+		this.goingToSleep = goingToSleep;
+		this.idle = false;
+		this.sleeping = false;
 	}
 	
 	public void setOrientation(boolean direction) {
@@ -334,4 +387,16 @@ public class Entity {
 		return(this.facingRight);
 	}
 
+	public void setHitbox(boolean flag) {
+		this.hitbox = flag;
+	}
+	
+	public boolean getHitbox() {
+		return(this.hitbox);
+	}
+	
+	public boolean isAirborne() {
+		return(this.airborne);
+	}
+	
 }

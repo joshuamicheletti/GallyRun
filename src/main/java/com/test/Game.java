@@ -14,12 +14,19 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
 
 public class Game {
 	private List<Entity> entityBuffer;
+	private List<Entity> tileBuffer;
+	
+	private int worldSizeX;
+	private int worldSizeY;
+	private int[][] world;
+	
 	private Timer timer;
 	private Engine engine;
 	private Controller controller;
@@ -36,7 +43,22 @@ public class Game {
 		
 		this.engine = new Engine(this.window);
 		
+		this.engine.loadTiles("./assets/textures/minecraft.png", 16, 16);
+		
+		this.worldSizeX = 128;
+		this.worldSizeY = 128;
+		
+		this.world = new int[this.worldSizeX][this.worldSizeY];
+		
+		for (int i = 0; i < this.worldSizeX; i++) {
+			for (int j = 0; j < this.worldSizeY; j++) {
+				this.world[i][j] = -1;
+			}
+		}
+		
 		this.loadStartingEntities();
+		
+		this.loadStartingTiles();
 		
 		this.controller = new Controller(this.engine.getCamera(), this.findByName("player", this.entityBuffer), this.engine);
 	}
@@ -53,7 +75,7 @@ public class Game {
 			}
 			
 			if (this.engine.canRender()) {
-				double time = this.engine.render(this.getEntityBuffer());
+				double time = this.engine.render(this.getEntityBuffer(), this.world);
 				this.timer.fps(time);
 			}
 		}
@@ -62,13 +84,12 @@ public class Game {
 	}
 	
 	public void updateEntities() {
-		
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
+//			System.out.println("Player: " + this.findByName("player", this.entityBuffer).model.getX() + ", " + this.findByName("player", this.entityBuffer).model.getY());
+			
 			this.entityBuffer.get(i).calculatePosition();
 			
-			if (i != 0) {
-				this.entityBuffer.get(i).checkCollision(this.entityBuffer);
-			}
+			this.entityBuffer.get(i).checkCollision(this.entityBuffer);
 			
 			this.entityBuffer.get(i).applyNewPosition();
 			
@@ -123,7 +144,7 @@ public class Game {
 		
 		
 		background.model.loadTextureAndAdapt("./assets/textures/grid.png");
-		background.model.setScale(3.0f);
+		background.model.setScale(0f);
 		background.setCollision(false);
 		background.setGravity(0);
 		
@@ -134,13 +155,13 @@ public class Game {
 		foreground.setNewPosition(0, -200);
 		foreground.setGravity(0);
 
-		player.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 5);
+		player.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 8);
 //		player.model.loadTextureAndAdapt("./assets/textures/gally.png");
 		player.model.setAnimationSpeed(10f);
 		player.model.setPosition(-50, 200);
 		player.setNewPosition(-50, 200);
 		player.model.setScale(0.5f);
-		player.model.setBBScale(0.85f, 1f);
+		player.model.setBBScale(0.85f, 0.85f);
 		
 //		player.setGravity(0);
 //		player.setGravity(-0.5f);
@@ -151,24 +172,33 @@ public class Game {
 		pengu.model.setPosition(150, 120);
 		
 //		blob.model.setAnimations(1);
-		blob.model.loadAnimationAndAdapt("./assets/textures/blob.png", 3, 1);
+		blob.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 5);
 		blob.model.setAnimationSpeed(5f);
 		blob.model.setPosition(-50f, 200);
 		blob.model.setScale(0.25f);
+		blob.model.setBBScale(0.85f,  0.85f);
 		
 		block.model.loadTextureAndAdapt("./assets/textures/block1.png");
 		block.model.setPosition(-350, -20);
 		block.model.setPosition(-350, -20);
 		block.setGravity(0);
+		
+		Entity ground = new Entity();
+		
+		ground.setName("ground");
+		ground.setHitbox(true);
+		ground.model.setBoundingBox(2048, 16, -2048, 0);
+		ground.setGravity(0);
+		
+		
 
-		
-		
-		this.entityBuffer.add(background);
-		this.entityBuffer.add(foreground);
+		this.entityBuffer.add(background); // WITHOUT THIS THE COLLISIONS DON'T WORK, IDK WHY
+//		this.entityBuffer.add(foreground);
 		this.entityBuffer.add(player);
 //		this.entityBuffer.add(pengu);
-		this.entityBuffer.add(blob);
-		this.entityBuffer.add(block);
+//		this.entityBuffer.add(blob);
+//		this.entityBuffer.add(block);
+		this.entityBuffer.add(ground);
 		
 //		for (int i = 0; i < 20; i++) {
 //			Entity entity = new Entity();
@@ -183,6 +213,55 @@ public class Game {
 		
 	}
 	
+	private void loadStartingTiles() {
+		Random rand = new Random();
+		
+		for (int i = 0; i < 128; i++) {
+			this.world[i][64] = 2;
+			this.world[i][63] = 3;
+			
+			float ground = rand.nextFloat();
+			
+			if (ground <= 0.5f) {
+				this.world[i][62] = 3;
+			} else {
+				this.world[i][62] = 0;
+			}
+			
+//			this.world[i][62] = 0;
+			this.world[i][61] = 0;
+		
+			for (int j = 0; j < 2; j++) {
+				float ore = rand.nextFloat();
+				
+				if (ore <= 0.02) {
+					this.world[i][60 - j] = 105;
+				} else if (ore <= 0.07) {
+					this.world[i][60 - j] = 16;
+				} else if (ore <= 0.17){
+					this.world[i][60 - j] = 17;
+				} else if (ore <= 0.3) {
+					this.world[i][60 - j] = 18;
+				} else {
+					this.world[i][60 - j] = 0;
+				}
+			}
+			
+			
+			
+			
+//			for (int j = 0; j < 128; j++) {
+//				this.world[i][j] = i;
+//			}
+		}
+		
+//		this.world[99][99] = 1;
+		
+		
+		
+		
+		
+	}
 	
 	public Entity findByName(String name, List<Entity> entityBuffer) {
 		

@@ -65,6 +65,11 @@ public class Model {
 	private float bbScaleX;
 	private float bbScaleY;
 	
+	private float bbBorderX0;
+	private float bbBorderY0;
+	private float bbBorderX2;
+	private float bbBorderY2;
+	
 	public Model() {
 		
 		float[] vertices = new float[] {
@@ -214,6 +219,35 @@ public class Model {
 			
 			glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
 		}
+		
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		
+		glDisableVertexAttribArray(0);
+		glDisableVertexAttribArray(1);
+	}
+	
+	public void renderSky(Camera camera) {
+		this.getProjection();
+		
+		this.tex.bind(0);
+		
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		
+		this.shader.bind();
+		this.shader.setUniform("sampler", 0);
+		this.shader.setUniform("projection", this.target);
+	
+		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
+		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+		
+		glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
+		glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.INDid);
+	
+		glDrawElements(GL_TRIANGLES, this.drawCount, GL_UNSIGNED_INT, 0);
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -441,17 +475,25 @@ public class Model {
 					this.animationPosition = 0;
 				}
 				
-				this.TEXVBOid = glGenBuffers();
+//				this.TEXVBOid = glGenBuffers();
 				glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
 				glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
 			}
 		}
 	}
 	
-	public void setIdle() {
-		if (this.animation != 0) {
-			this.animation = 0;
-			this.animationPosition = 0;
+	public void setIdle(boolean idle) {
+		
+		if (idle) {
+			if (this.animation != 5) {
+				this.animation = 5;
+				this.animationPosition = 0;
+			}
+		} else {
+			if (this.animation != 0) {
+				this.animation = 0;
+				this.animationPosition = 0;
+			}
 		}
 	}
 	
@@ -483,6 +525,19 @@ public class Model {
 		}
 	}
 	
+	public void setGoingToSleep() {
+		if (this.animation != 6) {
+			this.animation = 6;
+			this.animationPosition = 0;
+		}
+	}
+	
+	public void setSleeping() {
+		if (this.animation != 7) {
+			this.animation = 7;
+			this.animationPosition = 0;
+		}
+	}
 	
 	
 	public void setAnimations(int number) {
@@ -502,56 +557,93 @@ public class Model {
 		return(this.prevY);
 	}
 	
-	public List<Vector4f> calculateBoundingBox() {
-		this.getProjection();
+	public List<Vector4f> calculateBoundingBox(boolean hitbox) {
+		if (hitbox) {
+			List<Vector4f> boundingPoints = new ArrayList();
+			
+			Vector4f position1 = new Vector4f(this.bbBorderX0, this.bbBorderY0, 1, 1);
+			Vector4f position2 = new Vector4f(this.bbBorderX0, this.bbBorderY2, 1, 1);
+			Vector4f position3 = new Vector4f(this.bbBorderX2, this.bbBorderY2, 1, 1);
+			Vector4f position4 = new Vector4f(this.bbBorderX2, this.bbBorderY0, 1, 1);
+			
+			boundingPoints.add(position1);
+			boundingPoints.add(position2);
+			boundingPoints.add(position3);
+			boundingPoints.add(position4);
+			
+			return(boundingPoints);
+			
+		} else {
+			this.getProjection();
+			
+			Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+			Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+			Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+			Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+			
+			position1.mul(this.target, position1);
+			position2.mul(this.target, position2);
+			position3.mul(this.target, position3);
+			position4.mul(this.target, position4);
+			
+			List<Vector4f> boundingPoints = new ArrayList();
+			
+			boundingPoints.add(position1);
+			boundingPoints.add(position2);
+			boundingPoints.add(position3);
+			boundingPoints.add(position4);
+			
+//			System.out.println("Bounding Box: (" + position.x + ", " + position.y + ")");
+			
+			return(boundingPoints);
+		}
 		
-		Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
-		Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-		Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-		Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
 		
-		position1.mul(this.target, position1);
-		position2.mul(this.target, position2);
-		position3.mul(this.target, position3);
-		position4.mul(this.target, position4);
-		
-		List<Vector4f> boundingPoints = new ArrayList();
-		
-		boundingPoints.add(position1);
-		boundingPoints.add(position2);
-		boundingPoints.add(position3);
-		boundingPoints.add(position4);
-		
-//		System.out.println("Bounding Box: (" + position.x + ", " + position.y + ")");
-		
-		return(boundingPoints);
 	}
 	
-	public List<Vector4f> calculatePrevBoundingBox() {
-		Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
-		Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-		Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-		Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+	public List<Vector4f> calculatePrevBoundingBox(boolean hitbox) {
+		if (hitbox) {
+			List<Vector4f> boundingPoints = new ArrayList();
+			
+			Vector4f position1 = new Vector4f(this.bbBorderX0, this.bbBorderY0, 1, 1);
+			Vector4f position2 = new Vector4f(this.bbBorderX0, this.bbBorderY2, 1, 1);
+			Vector4f position3 = new Vector4f(this.bbBorderX2, this.bbBorderY2, 1, 1);
+			Vector4f position4 = new Vector4f(this.bbBorderX2, this.bbBorderY0, 1, 1);
+			
+			boundingPoints.add(position1);
+			boundingPoints.add(position2);
+			boundingPoints.add(position3);
+			boundingPoints.add(position4);
+			
+			return(boundingPoints);
+			
+		} else {
 		
-		Matrix4f prevTarget = new Matrix4f();
-		
-		prevTarget.mul(new Matrix4f().translate(this.prevX, this.prevY, 0), prevTarget);
-		prevTarget.mul(this.rotation, prevTarget);
-		prevTarget.mul(this.scale, prevTarget);
-		
-		position1.mul(prevTarget, position1);
-		position2.mul(prevTarget, position2);
-		position3.mul(prevTarget, position3);
-		position4.mul(prevTarget, position4);
-		
-		List<Vector4f> boundingPoints = new ArrayList();
-		
-		boundingPoints.add(position1);
-		boundingPoints.add(position2);
-		boundingPoints.add(position3);
-		boundingPoints.add(position4);
-		
-		return(boundingPoints);
+			Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+			Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+			Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+			Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+			
+			Matrix4f prevTarget = new Matrix4f();
+			
+			prevTarget.mul(new Matrix4f().translate(this.prevX, this.prevY, 0), prevTarget);
+			prevTarget.mul(this.rotation, prevTarget);
+			prevTarget.mul(this.scale, prevTarget);
+			
+			position1.mul(prevTarget, position1);
+			position2.mul(prevTarget, position2);
+			position3.mul(prevTarget, position3);
+			position4.mul(prevTarget, position4);
+			
+			List<Vector4f> boundingPoints = new ArrayList();
+			
+			boundingPoints.add(position1);
+			boundingPoints.add(position2);
+			boundingPoints.add(position3);
+			boundingPoints.add(position4);
+			
+			return(boundingPoints);
+		}
 	}
 
 	public void setBBScale(float x, float y) {
@@ -561,6 +653,36 @@ public class Model {
 	
 	public List<Integer> getFrames() {
 		return(this.animationFrames);
+	}
+	
+	public void setBoundingBox(float x0, float y0, float x2, float y2) {
+		this.bbBorderX0 = x0;
+		this.bbBorderY0 = y0;
+		this.bbBorderX2 = x2;
+		this.bbBorderY2 = y2;
+	}
+	
+	
+	public void loadTileSet(String texture) {
+		this.tex.loadImage(texture);
+	}
+	
+	public void changeTileUV(int tile, int w, int h) {		
+		int positionX = tile % w;
+		int positionY = (int)Math.floor((float)tile / (float)w);
+	
+		float [] textureUV;		
+		
+		textureUV = new float[] {										   
+				(1f / w) *  positionX,      (1f / h) * (positionY),
+				(1f / w) * (positionX + 1), (1f / h) * (positionY),
+				(1f / w) *  positionX,      (1f / h) * (positionY + 1),
+				(1f / w) * (positionX + 1), (1f / h) * (positionY + 1)
+		};
+			
+//		this.TEXVBOid = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
+		glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
 	}
 	
 }

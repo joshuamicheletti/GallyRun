@@ -13,8 +13,10 @@ public class Controller {
 	private float speed;
 	
 	private boolean pressedB;
-	
 	private boolean pressedSPACE;
+	
+	private double idleTime;
+	private double sleepTime;
 	
 	
 	public Controller(Camera camera, Entity player, Engine engine) {
@@ -26,11 +28,25 @@ public class Controller {
 		
 		this.pressedB = false;
 		this.pressedSPACE = false;
+		
+		this.idleTime = System.nanoTime() / (double)1000000000L;
+		this.sleepTime = System.nanoTime() / (double)1000000000L;
+//		System.out.println("Time: " + this.time);
 	}
 	
 	
 	public void pollEvents(long window) {
 		glfwPollEvents();
+		
+//		System.out.println("Delta: " + delta);
+//		System.out.println("Time Now: " + timeNow);
+//		System.out.println("Time: " + this.time);
+		
+//		this.time = timeNow;
+		
+		
+		
+//		System.nanoTime()) / (double)1000000000L
 		
 		Vector3f cameraMovement = new Vector3f(0, 0, 0);
 		
@@ -140,10 +156,40 @@ public class Controller {
 		}
 		
 		
-//		this.player.model.setPosition(playerX, playerY);
 		this.player.applyForcePolar(distance, direction);
 		this.player.model.setRotation(this.player.model.getRotation() + rotation);
-		
 		this.camera.move(cameraMovement);
+		
+		if (!A && !D && !this.player.isAirborne()) {
+			double timeNow = System.nanoTime() / (double)1000000000L;
+			
+			double delta = timeNow - this.idleTime;
+			double deltaSleep = timeNow - this.sleepTime;
+			
+			if (delta >= 5.0) {
+				this.player.setIdle(true);
+				if (delta >= 9.0) {
+					this.player.setIdle(false);
+					this.idleTime = System.nanoTime() / (double)1000000000L;
+				}
+			}
+			
+			if (deltaSleep >= 30.0) {
+				this.player.setGoingToSleep(true);
+				
+				if (deltaSleep >= 31.0) {
+					this.player.setSleep(true);
+//					this.sleepTime = System.nanoTime() / (double)1000000000L;
+				}
+			}
+		} else {
+			this.idleTime = System.nanoTime() / (double)1000000000L;
+			this.sleepTime = System.nanoTime() / (double)1000000000L;
+			this.player.setIdle(false);
+			this.player.setGoingToSleep(false);
+			this.player.setSleep(false);
+		}
+		
+		
 	}
 }
