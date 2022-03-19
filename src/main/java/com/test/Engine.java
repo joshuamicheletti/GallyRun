@@ -36,6 +36,8 @@ public class Engine {
 	private int w;
 	private int h;
 	
+	private int tileSize;
+	
 	public Engine(long window) {
 		
 		this.window = window;
@@ -68,6 +70,8 @@ public class Engine {
 		this.sky = new Model();
 		this.sky.loadTextureAndAdapt("./assets/textures/background2.png");
 		this.sky.setScale(0.015f);
+		
+		this.tileSize = 64;
 	}
 	
 	public void loadTiles(String texture, int w, int h) {
@@ -77,7 +81,7 @@ public class Engine {
 		this.tileW = w;
 		this.tileH = h;
 		
-		this.tileSet.model.setScale(1f / 8f);
+		this.tileSet.model.setScale(this.tileSize / 256f);
 	}
 	
 	
@@ -116,34 +120,20 @@ public class Engine {
 		for (int i = 0; i < world[0].length; i++) {
 			for (int j = 0; j < world.length; j++) {
 				if (world[i][j] >= 0) {
-					int positionX = i * 32 - (32 * (world[0].length / 2));
-					int positionY = j * 32 - (32 * (world.length / 2));
+					int positionX = i * this.tileSize - (this.tileSize * (world[0].length / 2));
+					int positionY = j * this.tileSize - (this.tileSize * (world.length / 2));
+				
 					
-					
-//					System.out.println(this.camera.getPosition().x + this.w / 2);
-//					System.out.println(this.camera.getPosition().x - this.w / 2);
-//					System.out.println(this.camera.getPosition().y + this.h / 2);
-//					System.out.println(this.camera.getPosition().y - this.h / 2);
-					
-					if (positionX - 16 >= -this.camera.getPosition().x + this.w / 2 ||
-						positionX + 16 <= -this.camera.getPosition().x - this.w / 2 ||
-						positionY - 16 >= -this.camera.getPosition().y + this.h / 2 ||
-						positionY + 16 <= -this.camera.getPosition().y - this.h / 2) {
+					if (positionX - this.tileSize / 2 >= -this.camera.getPosition().x + this.w / 2 ||
+						positionX + this.tileSize / 2 <= -this.camera.getPosition().x - this.w / 2 ||
+						positionY - this.tileSize / 2 >= -this.camera.getPosition().y + this.h / 2 ||
+						positionY + this.tileSize / 2 <= -this.camera.getPosition().y - this.h / 2) {
 						
 					} else {
 						this.tileSet.model.changeTileUV(world[i][j], this.tileW, this.tileH);
 						this.tileSet.model.setPosition(positionX, positionY);
 						this.tileSet.model.render(this.camera, this.debug);
-					}
-					
-//					if (((positionX + 16 < this.camera.getPosition().x + this.w / 2 && positionX + 16 > this.camera.getPosition().x - this.w / 2) ||
-//						 (positionX - 16 < this.camera.getPosition().x + this.w / 2 && positionX - 16 > this.camera.getPosition().x - this.w / 2)) &&
-//						((positionY + 16 < this.camera.getPosition().y ))) {
-//						
-//					}
-					
-					
-					
+					}					
 				}
 			}
 		}
@@ -167,5 +157,13 @@ public class Engine {
 	
 	public void setDebug(boolean flag) {
 		this.debug = flag;
+	}
+	
+	public int getTileSize() {
+		return(this.tileSize);
+	}
+	
+	public void setTileSize(int size) {
+		this.tileSize = size;
 	}
 }

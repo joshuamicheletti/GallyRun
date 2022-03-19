@@ -12,9 +12,15 @@ import static org.lwjgl.glfw.GLFW.glfwTerminate;
 import static org.lwjgl.glfw.GLFW.glfwWindowHint;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -85,7 +91,7 @@ public class Game {
 	
 	public void updateEntities() {
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
-//			System.out.println("Player: " + this.findByName("player", this.entityBuffer).model.getX() + ", " + this.findByName("player", this.entityBuffer).model.getY());
+			System.out.println("Player: " + this.findByName("player", this.entityBuffer).model.getX() + ", " + this.findByName("player", this.entityBuffer).model.getY());
 			
 			this.entityBuffer.get(i).calculatePosition();
 			
@@ -187,7 +193,7 @@ public class Game {
 		
 		ground.setName("ground");
 		ground.setHitbox(true);
-		ground.model.setBoundingBox(2048, 16, -2048, 0);
+		ground.model.setBoundingBox(this.engine.getTileSize() * this.worldSizeX / 2, this.engine.getTileSize() / 2, -this.engine.getTileSize() * this.worldSizeX / 2, -this.engine.getTileSize() / 2);
 		ground.setGravity(0);
 		
 		
@@ -228,7 +234,6 @@ public class Game {
 				this.world[i][62] = 0;
 			}
 			
-//			this.world[i][62] = 0;
 			this.world[i][61] = 0;
 		
 			for (int j = 0; j < 2; j++) {
@@ -246,22 +251,103 @@ public class Game {
 					this.world[i][60 - j] = 0;
 				}
 			}
-			
-			
-			
-			
-//			for (int j = 0; j < 128; j++) {
-//				this.world[i][j] = i;
-//			}
 		}
+	
 		
-//		this.world[99][99] = 1;
+		int[][] house = this.loadStructure("./assets/world/house.str");
 		
+		applyStructure(house, -10, 1);
+		applyStructure(house, -2, 1);
 		
+		int[][] tammy = this.loadStructure("./assets/world/tammy.str");
 		
-		
+		applyStructure(tammy, 20, 1);
 		
 	}
+	
+	private int[][] loadStructure(String file) {
+		int[][] structure = null;
+		
+		try {
+			File input = new File(file);
+			
+			Scanner reader = new Scanner(input);
+			
+			int rows = 0;
+			int columns = 0;
+			
+			while (reader.hasNextLine()) {
+				String line = reader.nextLine();
+				
+				String[] values = line.split(" ");
+				
+				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
+				 
+				for (int i = 0; i < listValues.size(); i++) {
+					if (!isNumeric(listValues.get(i))) {
+						listValues.remove(i);
+						i--;
+					}
+				}
+				
+				columns = listValues.size();
+				rows++;
+			}
+			reader.close();
+			
+			reader = new Scanner(input);
+			
+			structure = new int[columns][rows];
+			
+			int currentRow = 0;
+			
+			while (reader.hasNextLine()) {
+				String line = reader.nextLine();
+				
+				String[] values = line.split(" ");
+				
+				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
+				 
+				for (int i = 0; i < listValues.size(); i++) {
+					if (!isNumeric(listValues.get(i))) {
+						listValues.remove(i);
+						i--;
+					}
+					structure[i][(rows - 1) - currentRow] = Integer.parseInt(listValues.get(i));
+				}
+		
+				currentRow++;
+			}
+			reader.close();
+			
+			
+		} catch (FileNotFoundException e) {
+			System.out.println("File Not Found: " + e);
+		}
+		
+		return(structure);
+	}
+	
+	
+	private void applyStructure(int[][] structure, int x, int y) {
+		for (int i = x; i < structure.length + x; i++) {
+			for (int j = y; j < structure[0].length + y; j++) {
+				world[worldSizeX / 2 + i][worldSizeY / 2 + j] = structure[i - x][j - y];
+			}
+		}
+	}
+	
+	
+	public static boolean isNumeric(String str) { 
+		try {  
+			Double.parseDouble(str);  
+			return true;
+		} catch(NumberFormatException e){  
+			return false;  
+		}  
+	}
+
+	
 	
 	public Entity findByName(String name, List<Entity> entityBuffer) {
 		
