@@ -3,45 +3,41 @@ package com.test;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joml.Vector2f;
 import org.joml.Vector4f;
 import org.joml.Vector4i;
 
 public class Entity {
 	public Model model;
-	private String name;
+	protected String name;
 	
-	private float mass;
-	private boolean canCollide;
+	protected float mass;
+	protected boolean canCollide;
 	
-	private float forceX;
-	private float forceY;
+	protected float forceX;
+	protected float forceY;
 	
-	private float accelerationX;
-	private float accelerationY;
+	protected float accelerationX;
+	protected float accelerationY;
 	
-	private float velocityX;
-	private float velocityY;
+	protected float velocityX;
+	protected float velocityY;
 	
-	private float airFriction;
+	protected float airFriction;
 	
-	private float gravity;
+	protected float gravity;
 	
-	private float newPositionX;
-	private float newPositionY;
+	protected float newPositionX;
+	protected float newPositionY;
 	
-	private boolean airborne;
-	private boolean stuck;
+	protected boolean airborne;
+	protected boolean stuck;
 	
-	private boolean facingRight;
+	protected boolean facingRight;
 	
-	private boolean hitbox;
+	protected boolean hitbox;
 	
-	private boolean idle;
-	
-	private boolean sleeping;
-	
-	private boolean goingToSleep;
-	
+
 	public Entity() {
 		this.model = new Model();
 		this.canCollide = true;
@@ -68,12 +64,6 @@ public class Entity {
 		this.facingRight = true;
 		
 		this.hitbox = false;
-		
-		this.idle = false;
-		
-		this.sleeping = false;
-		
-		this.goingToSleep = false;
 	}
 	
 	public void setName(String name) {
@@ -84,8 +74,11 @@ public class Entity {
 		return(this.name);
 	}
 	
-	public void checkCollision(List<Entity> entityBuffer) {
+	public void checkCollision(List<Entity> entityBuffer, List<Hitbox> worldHitboxes) {
 		if (this.canCollide) {
+			
+			this.newPositionX = this.model.getX();
+			this.newPositionY = this.model.getY();
 			
 			List<Vector4f> entityBB = this.model.calculateBoundingBox(this.hitbox);
 			
@@ -94,11 +87,65 @@ public class Entity {
 			this.airborne = true;
 			this.stuck = false;
 			
+			
+			for (int i = 0; i < worldHitboxes.size(); i++) {				
+				Vector2f objectBB0 = new Vector2f(worldHitboxes.get(i).getX0(), worldHitboxes.get(i).getY0());
+				Vector2f objectBB2 = new Vector2f(worldHitboxes.get(i).getX2(), worldHitboxes.get(i).getY2());		
+				
+				if (((entityBB.get(0).x >= objectBB2.x && entityBB.get(0).x <  objectBB0.x) ||
+					( entityBB.get(2).x >= objectBB2.x && entityBB.get(2).x <  objectBB0.x) ||
+					( entityBB.get(2).x <= objectBB2.x && entityBB.get(0).x >= objectBB0.x)) &&
+					((entityBB.get(0).y >= objectBB2.y && entityBB.get(0).y <  objectBB0.y) ||
+					( entityBB.get(2).y >= objectBB2.y && entityBB.get(2).y <  objectBB0.y) ||
+					( entityBB.get(2).y <= objectBB2.y && entityBB.get(0).y >= objectBB0.y))) {
+
+					contacts++;
+					
+					List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
+					
+					if ((prevEntityBB.get(0).x >= objectBB2.x && prevEntityBB.get(0).x < objectBB0.x) ||
+						(prevEntityBB.get(2).x >= objectBB2.x && prevEntityBB.get(2).x < objectBB0.x) ||
+						(prevEntityBB.get(2).x <= objectBB2.x && prevEntityBB.get(0).x >= objectBB0.x)) {
+						if (prevEntityBB.get(2).y >= objectBB0.y) { // COMING FROM UP
+							this.newPositionY = objectBB0.y + Math.abs(this.model.getY() - entityBB.get(2).y) + 0.1f;
+							this.airborne = false;
+						}
+						else if (prevEntityBB.get(0).y <= objectBB2.y) { // COMING FROM DOWN
+							this.newPositionY = objectBB2.y - Math.abs(entityBB.get(2).y - this.newPositionY) - 0.1f;
+							this.stuck = true;				
+						}
+						this.velocityY = 0;
+					}
+					
+					else if ((prevEntityBB.get(0).y >= objectBB2.y && prevEntityBB.get(0).y < objectBB0.y) ||
+							 (prevEntityBB.get(2).y >= objectBB2.y && prevEntityBB.get(2).y < objectBB0.y) ||
+							 (prevEntityBB.get(2).y <= objectBB2.y && prevEntityBB.get(0).y >= objectBB0.y)) {
+						
+						if (prevEntityBB.get(0).x <= objectBB2.x) { // COMING FROM LEFT
+							this.newPositionX = objectBB2.x - Math.abs(this.model.getX() - entityBB.get(2).x) - 0.001f;
+						}
+						else if (prevEntityBB.get(2).x >= objectBB0.x) { // COMING FROM RIGHT
+							this.newPositionX = objectBB0.x + Math.abs(this.model.getX() - entityBB.get(2).x) + 0.001f;
+						}
+						this.velocityX = 0;
+					}
+					
+					else {
+						this.newPositionX = this.model.getPrevX();
+						this.newPositionY = this.model.getPrevY();
+					}
+				}
+				
+				if (objectBB2.y >= entityBB.get(0).y && objectBB2.y <= entityBB.get(0).y + 0.01f) {
+					this.stuck = true;
+				}
+			}
+			
+			
 			for (int i = 0; i < entityBuffer.size(); i++) {
 				
 				if (this != entityBuffer.get(i) && entityBuffer.get(i).canCollide()) {
 					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(entityBuffer.get(i).getHitbox());
-					
 					
 					if (((entityBB.get(0).x >= objectBB.get(2).x && entityBB.get(0).x <  objectBB.get(0).x) ||
 						( entityBB.get(2).x >= objectBB.get(2).x && entityBB.get(2).x <  objectBB.get(0).x) ||
@@ -149,11 +196,11 @@ public class Entity {
 						this.stuck = true;
 					}
 				}
-				
-				if (contacts == 0) {
-					this.newPositionX = this.model.getX();
-					this.newPositionY = this.model.getY();
-				}
+			}
+			
+			if (contacts == 0) {
+				this.newPositionX = this.model.getX();
+				this.newPositionY = this.model.getY();
 			}
 		}
 	}
@@ -199,94 +246,22 @@ public class Entity {
 	}
 	
 	public void calculatePosition() {
-		// RETHINK ABOUT THIS
-	
-		
-//		if (Math.abs(this.forceX) <= this.airFriction) {
-//			this.forceX = 0;
-//		}
-//		else {
-//			if (this.forceX > 0) {
-//				this.forceX -= this.airFriction;
-//			} else if (this.forceX < 0) {
-//				this.forceX += this.airFriction;
-//			}
-//		}
-//		
-//		if (Math.abs(this.forceY) <= this.airFriction) {
-//			this.forceY = 0;
-//		}
-//		else {
-//			if (this.forceY > 0) {
-//				this.forceY -= this.airFriction;
-//			} else if (this.forceY < 0) {
-//				this.forceY += this.airFriction;
-//			}
-//		}
-//		
-//		System.out.println(this.name + " force: (" + this.forceX + ", " + this.forceY + ")");
-//		
-//		this.accelerationX += this.forceX / this.mass;
-//		this.accelerationY += this.forceY / this.mass;
-//		
-//		if (accelerationX > 0) {
-//			accelerationX -= this.airFriction;
-//		}
-//		else if (accelerationX < 0) {
-//			accelerationX += this.airFriction;
-//		}
-//		
-//		if (accelerationY > 0) {
-//			accelerationY -= this.airFriction;
-//		}
-//		else if (accelerationY < 0) {
-//			accelerationY += this.airFriction;
-//		}
-		
-//		float totalForceX = this.forceX + (this.accelerationX * this.mass);
-//		float totalForceY = this.forceY + (this.accelerationY * this.mass);
-		
-//		float totalForceX = this.forceX + (this.airFriction * (-this.velocityX));
-//		float totalForceY = this.forceY + (this.airFriction * (-this.velocityY));
-		
-//		float totalForceX = this.accelerationX * this.mass + this.forceX + (this.airFriction * ((-this.accelerationX) * this.mass));
-		
 		float totalForceX = this.forceX + (this.airFriction * (-this.velocityX));
 		float totalForceY = this.forceY + (this.airFriction * (-this.velocityY)) - (this.mass * this.gravity);
 		
 		this.accelerationX = totalForceX / this.mass;
 		this.accelerationY = totalForceY / this.mass;
-
-		
-//		this.accelerationX += this.airFriction * (-this.accelerationX);
-//		this.accelerationY += this.airFriction * (-this.accelerationY);
-		
-		
-//		if (this.accelerationX > 0) {
-//			this.accelerationX -= this.airFriction * (-this.accelerationX);
-//		} else if (this.accelerationY < 0) {
-//			this.accelerationX += this.airFriction * this.accelerationX;
-//		}
 		
 		this.velocityX += accelerationX;
 		this.velocityY += accelerationY;
-		
-//		System.out.println(this.name + " applied force: (" + this.forceX + ", " + this.forceY + ")");
-//		System.out.println(this.name + " force: (" + totalForceX + ", " + totalForceX + ")");
-//		System.out.println(this.name + " acceleration: (" + this.accelerationX + ", " + this.accelerationY + ")");
-//		System.out.println(this.name + " velocity: (" + this.velocityX + ", " + this.velocityY + ")");
-		
+
 		float newPositionX = this.model.getX() + this.velocityX;
 		float newPositionY = this.model.getY() + this.velocityY;
-		
-//		System.out.println(this.name + ": (" + newPositionX + ", " + newPositionY + ")");
-		
+
 		this.model.setPosition(newPositionX, newPositionY);
 		
 		this.forceX = 0;
 		this.forceY = 0;
-		
-//		this.model.setPosition(this.model.getX() + this.velocityX, this.model.getY() + this.velocityY);
 	}
 	
 	public void setGravity(float gravity) {
@@ -316,67 +291,8 @@ public class Entity {
 		return(this.velocityY);
 	}
 	
-	public boolean canJump() {
-		return(!this.airborne && !this.stuck);
-	}
-
 	public void updateAnimation() {
-		if (this.airborne) {
-			this.model.setAnimationSpeed(10f);
-			
-			float threshold = 2f;
-			
-			if (this.velocityY > threshold && this.model.getFrames().size() >= 3) {
-				this.model.setJumping();
-			} else if (this.velocityY >= -threshold && this.velocityY <= threshold  && this.model.getFrames().size() >= 4) {
-				this.model.setMidAir();
-			} else if (this.velocityY < -threshold  && this.model.getFrames().size() >= 5) {
-				this.model.setFalling();
-			}
-		} else {
-			this.model.setAnimationSpeed(3f);
-			
-			float threshold = 0.02f;
-	
-			if (this.velocityX < threshold && this.velocityX > -threshold) {
-				if (this.idle) {
-					this.model.setAnimationSpeed(1f);
-					this.model.setIdle(this.idle);
-				} else if (this.goingToSleep) {
-					this.model.setAnimationSpeed(1f);
-					this.model.setGoingToSleep();
-				} else if (this.sleeping) {
-					this.model.setAnimationSpeed(1f);
-					this.model.setSleeping();
-				} else {
-					this.model.setIdle(false);
-				}
-		
-			} else if (this.model.getFrames().size() >= 1) {
-				this.model.setAnimationSpeed(3f);
-				this.model.setRunning();
-			}
-		}
-		
 		this.model.updateAnimation(this.facingRight);
-	}
-	
-	public void setIdle(boolean idle) {
-		this.idle = idle;
-		this.sleeping = false;
-		this.goingToSleep = false;
-	}
-	
-	public void setSleep(boolean sleep) {
-		this.sleeping = sleep;
-		this.idle = false;
-		this.goingToSleep = false;
-	}
-	
-	public void setGoingToSleep(boolean goingToSleep) {
-		this.goingToSleep = goingToSleep;
-		this.idle = false;
-		this.sleeping = false;
 	}
 	
 	public void setOrientation(boolean direction) {

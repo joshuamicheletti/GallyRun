@@ -103,6 +103,10 @@ public class Engine {
 		for (int i = 0; i < entityBuffer.size(); i++) {
 			if (!entityBuffer.get(i).getHitbox()) {
 				entityBuffer.get(i).model.render(this.camera, this.debug);
+				if (entityBuffer.get(i) instanceof Player) {
+					Player player = (Player)entityBuffer.get(i);
+					player.allert.render(this.camera, this.debug);
+				}
 			}
 			
 		}
@@ -117,11 +121,11 @@ public class Engine {
 	}
 	
 	private void renderTiles(int[][] world) {
-		for (int i = 0; i < world[0].length; i++) {
-			for (int j = 0; j < world.length; j++) {
+		for (int i = 0; i < world.length; i++) {
+			for (int j = 0; j < world[0].length; j++) {
 				if (world[i][j] >= 0) {
-					int positionX = i * this.tileSize - (this.tileSize * (world[0].length / 2));
-					int positionY = j * this.tileSize - (this.tileSize * (world.length / 2));
+					int positionX = i * this.tileSize - (this.tileSize * (world.length / 2));
+					int positionY = j * this.tileSize - (this.tileSize * (world[0].length / 2));
 				
 					
 					if (positionX - this.tileSize / 2 >= -this.camera.getPosition().x + this.w / 2 ||

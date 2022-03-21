@@ -33,6 +33,8 @@ public class Game {
 	private int worldSizeY;
 	private int[][] world;
 	
+	private List<Hitbox> worldHitboxes;
+	
 	private Timer timer;
 	private Engine engine;
 	private Controller controller;
@@ -43,16 +45,20 @@ public class Game {
 		
 		this.entityBuffer = new ArrayList<Entity>();
 		
+		this.worldHitboxes = new ArrayList<Hitbox>();
+		
 		this.timer = new Timer();
 		
 		this.timer.setFramerate(60);
 		
 		this.engine = new Engine(this.window);
 		
+//		this.engine.setTileSize(32);
+		
 		this.engine.loadTiles("./assets/textures/minecraft.png", 16, 16);
 		
-		this.worldSizeX = 128;
-		this.worldSizeY = 128;
+		this.worldSizeX = 256;
+		this.worldSizeY = 64;
 		
 		this.world = new int[this.worldSizeX][this.worldSizeY];
 		
@@ -66,7 +72,7 @@ public class Game {
 		
 		this.loadStartingTiles();
 		
-		this.controller = new Controller(this.engine.getCamera(), this.findByName("player", this.entityBuffer), this.engine);
+		this.controller = new Controller(this.engine.getCamera(), (Player)this.findByName("player", this.entityBuffer), this.engine);
 	}
 	
 	public void loop() {
@@ -91,11 +97,11 @@ public class Game {
 	
 	public void updateEntities() {
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
-			System.out.println("Player: " + this.findByName("player", this.entityBuffer).model.getX() + ", " + this.findByName("player", this.entityBuffer).model.getY());
+//			System.out.println("Player: " + this.findByName("player", this.entityBuffer).model.getX() + ", " + this.findByName("player", this.entityBuffer).model.getY());
 			
 			this.entityBuffer.get(i).calculatePosition();
 			
-			this.entityBuffer.get(i).checkCollision(this.entityBuffer);
+			this.entityBuffer.get(i).checkCollision(this.entityBuffer, this.worldHitboxes);
 			
 			this.entityBuffer.get(i).applyNewPosition();
 			
@@ -136,7 +142,7 @@ public class Game {
 	private void loadStartingEntities() {
 		Entity background = new Entity();
 		Entity foreground = new Entity();
-		Entity player = new Entity();
+		Player player = new Player();
 		Entity pengu = new Entity();
 		Entity blob = new Entity();
 		Entity block = new Entity();
@@ -161,28 +167,29 @@ public class Game {
 		foreground.setNewPosition(0, -200);
 		foreground.setGravity(0);
 
-		player.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 8);
+		player.model.loadAnimationAndAdapt("./assets/textures/gally3.png", 3, 8);
 //		player.model.loadTextureAndAdapt("./assets/textures/gally.png");
 		player.model.setAnimationSpeed(10f);
-		player.model.setPosition(-50, 200);
-		player.setNewPosition(-50, 200);
-		player.model.setScale(0.5f);
-		player.model.setBBScale(0.85f, 0.85f);
+		player.model.setPosition(-200, 200);
+		player.setNewPosition(-200, 200);
+		player.setScale(0.5f);
+		player.model.setBBScale(0.75f, 0.85f);
+		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 2);
 		
-//		player.setGravity(0);
+//		player.setGravity(0);i 
 //		player.setGravity(-0.5f);
 //		pengu.model.setAnimations(1);
 		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2, 1);
 		pengu.model.setAnimationSpeed(1f);
-		pengu.model.setPosition(150, 120);
-		pengu.model.setPosition(150, 120);
+		pengu.model.setPosition(1200, 200);
+		pengu.model.setPosition(1200, 200);
 		
 //		blob.model.setAnimations(1);
 		blob.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 5);
 		blob.model.setAnimationSpeed(5f);
 		blob.model.setPosition(-50f, 200);
 		blob.model.setScale(0.25f);
-		blob.model.setBBScale(0.85f,  0.85f);
+//		blob.model.setBBScale(0.85f,  0.85f);
 		
 		block.model.loadTextureAndAdapt("./assets/textures/block1.png");
 		block.model.setPosition(-350, -20);
@@ -196,15 +203,22 @@ public class Game {
 		ground.model.setBoundingBox(this.engine.getTileSize() * this.worldSizeX / 2, this.engine.getTileSize() / 2, -this.engine.getTileSize() * this.worldSizeX / 2, -this.engine.getTileSize() / 2);
 		ground.setGravity(0);
 		
+		Hitbox groundHitbox = new Hitbox(this.engine.getTileSize() * this.worldSizeX / 2, this.engine.getTileSize() / 2, -this.engine.getTileSize() * this.worldSizeX / 2, -this.engine.getTileSize() / 2);
+		Hitbox wallLeft = new Hitbox(-900, 200, -1000, 0);
+		Hitbox wallRight = new Hitbox(-600, 200, -700, 0);
+		
+		this.worldHitboxes.add(groundHitbox);
+		this.worldHitboxes.add(wallLeft);
+		this.worldHitboxes.add(wallRight);
 		
 
 		this.entityBuffer.add(background); // WITHOUT THIS THE COLLISIONS DON'T WORK, IDK WHY
 //		this.entityBuffer.add(foreground);
 		this.entityBuffer.add(player);
-//		this.entityBuffer.add(pengu);
+		this.entityBuffer.add(pengu);
 //		this.entityBuffer.add(blob);
 //		this.entityBuffer.add(block);
-		this.entityBuffer.add(ground);
+//		this.entityBuffer.add(ground);
 		
 //		for (int i = 0; i < 20; i++) {
 //			Entity entity = new Entity();
@@ -222,133 +236,69 @@ public class Game {
 	private void loadStartingTiles() {
 		Random rand = new Random();
 		
-		for (int i = 0; i < 128; i++) {
-			this.world[i][64] = 2;
-			this.world[i][63] = 3;
+		for (int i = 0; i < this.worldSizeX; i++) {
+			this.world[i][this.worldSizeY / 2] = 2;
+			this.world[i][this.worldSizeY / 2 - 1] = 3;
 			
 			float ground = rand.nextFloat();
 			
 			if (ground <= 0.5f) {
-				this.world[i][62] = 3;
+				this.world[i][this.worldSizeY / 2 - 2] = 3;
 			} else {
-				this.world[i][62] = 0;
+				this.world[i][this.worldSizeY / 2 - 2] = 0;
 			}
 			
-			this.world[i][61] = 0;
+			this.world[i][this.worldSizeY / 2 - 3] = 0;
 		
 			for (int j = 0; j < 2; j++) {
 				float ore = rand.nextFloat();
 				
 				if (ore <= 0.02) {
-					this.world[i][60 - j] = 105;
+					this.world[i][this.worldSizeY / 2 - 4 - j] = 105;
 				} else if (ore <= 0.07) {
-					this.world[i][60 - j] = 16;
+					this.world[i][this.worldSizeY / 2 - 4 - j] = 16;
 				} else if (ore <= 0.17){
-					this.world[i][60 - j] = 17;
+					this.world[i][this.worldSizeY / 2 - 4 - j] = 17;
 				} else if (ore <= 0.3) {
-					this.world[i][60 - j] = 18;
+					this.world[i][this.worldSizeY / 2 - 4 - j] = 18;
 				} else {
-					this.world[i][60 - j] = 0;
+					this.world[i][this.worldSizeY / 2 - 4 - j] = 0;
 				}
 			}
 		}
 	
 		
-		int[][] house = this.loadStructure("./assets/world/house.str");
+		Structure house = new Structure();
 		
-		applyStructure(house, -10, 1);
-		applyStructure(house, -2, 1);
+		house.loadStructureWithHitbox("./assets/world/house.str", this.engine.getTileSize());
 		
-		int[][] tammy = this.loadStructure("./assets/world/tammy.str");
+		house.applyStructure(-10, 1, this.world);
+		house.applyStructureWithHitbox(-2, 1, this.world, this.worldHitboxes);
 		
-		applyStructure(tammy, 20, 1);
+		Structure tammy = new Structure();
+		tammy.loadStructureWithHitbox("./assets/world/tammy.str", this.engine.getTileSize());
+		tammy.applyStructure(20,  1, this.world);
 		
-	}
-	
-	private int[][] loadStructure(String file) {
-		int[][] structure = null;
 		
-		try {
-			File input = new File(file);
-			
-			Scanner reader = new Scanner(input);
-			
-			int rows = 0;
-			int columns = 0;
-			
-			while (reader.hasNextLine()) {
-				String line = reader.nextLine();
-				
-				String[] values = line.split(" ");
-				
-				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
-				 
-				for (int i = 0; i < listValues.size(); i++) {
-					if (!isNumeric(listValues.get(i))) {
-						listValues.remove(i);
-						i--;
-					}
+		Structure tree = new Structure();
+		
+		tree.loadStructureWithHitbox("./assets/world/tree.str", this.engine.getTileSize());
+		tree.applyStructure(-15, 1, this.world);
+		tree.applyStructureWithHitbox(-30, 1, this.world, worldHitboxes);	
+		
+		// world limit
+		
+		for (int i = 0; i < this.worldSizeX; i++) {
+			for (int j = 0; j < this.worldSizeY; j++) {
+				if ((i == 0 || i == this.worldSizeX - 1) ||
+					(j == 0 || j == this.worldSizeY - 1)) {
+					world[i][j] = 181;
 				}
-				
-				columns = listValues.size();
-				rows++;
 			}
-			reader.close();
-			
-			reader = new Scanner(input);
-			
-			structure = new int[columns][rows];
-			
-			int currentRow = 0;
-			
-			while (reader.hasNextLine()) {
-				String line = reader.nextLine();
-				
-				String[] values = line.split(" ");
-				
-				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
-				 
-				for (int i = 0; i < listValues.size(); i++) {
-					if (!isNumeric(listValues.get(i))) {
-						listValues.remove(i);
-						i--;
-					}
-					structure[i][(rows - 1) - currentRow] = Integer.parseInt(listValues.get(i));
-				}
-		
-				currentRow++;
-			}
-			reader.close();
-			
-			
-		} catch (FileNotFoundException e) {
-			System.out.println("File Not Found: " + e);
 		}
 		
-		return(structure);
 	}
-	
-	
-	private void applyStructure(int[][] structure, int x, int y) {
-		for (int i = x; i < structure.length + x; i++) {
-			for (int j = y; j < structure[0].length + y; j++) {
-				world[worldSizeX / 2 + i][worldSizeY / 2 + j] = structure[i - x][j - y];
-			}
-		}
-	}
-	
-	
-	public static boolean isNumeric(String str) { 
-		try {  
-			Double.parseDouble(str);  
-			return true;
-		} catch(NumberFormatException e){  
-			return false;  
-		}  
-	}
-
-	
-	
+		
 	public Entity findByName(String name, List<Entity> entityBuffer) {
 		
 		for (int i = 0; i < entityBuffer.size(); i++) {

@@ -7,7 +7,7 @@ import org.joml.Vector3f;
 
 public class Controller {
 	private Camera camera;
-	private Entity player;
+	private Player player;
 	private Engine engine;
 	
 	private float speed;
@@ -19,7 +19,7 @@ public class Controller {
 	private double sleepTime;
 	
 	
-	public Controller(Camera camera, Entity player, Engine engine) {
+	public Controller(Camera camera, Player player, Engine engine) {
 		this.camera = camera;
 		this.player = player;
 		this.engine = engine;
@@ -31,31 +31,14 @@ public class Controller {
 		
 		this.idleTime = System.nanoTime() / (double)1000000000L;
 		this.sleepTime = System.nanoTime() / (double)1000000000L;
-//		System.out.println("Time: " + this.time);
 	}
 	
 	
 	public void pollEvents(long window) {
 		glfwPollEvents();
 		
-//		System.out.println("Delta: " + delta);
-//		System.out.println("Time Now: " + timeNow);
-//		System.out.println("Time: " + this.time);
-		
-//		this.time = timeNow;
-		
-		
-		
-//		System.nanoTime()) / (double)1000000000L
-		
 		Vector3f cameraMovement = new Vector3f(0, 0, 0);
-		
-//		float playerX = this.player.model.getX();
-//		float playerY = this.player.model.getY();
-		
-		float playerX = 0;
-		float playerY = 0;
-		
+	
 		float distance = 0;
 		float direction = 0;
 		
@@ -67,18 +50,14 @@ public class Controller {
 		boolean S = false;
 		
 		if (glfwGetKey(window, GLFW_KEY_A) == GL_TRUE) {
-//			playerX -= this.speed;
 			A = true;
 		} else if (glfwGetKey(window, GLFW_KEY_D) == GL_TRUE) {
 			D = true;
-//			playerX += this.speed;
 		}
 		
 		if (glfwGetKey(window, GLFW_KEY_W) == GL_TRUE) {
 			W = true; 
-//			playerY += this.speed;
 		} else if (glfwGetKey(window, GLFW_KEY_S) == GL_TRUE) {
-//			playerY -= this.speed;
 			S = true;
 		}
 		
@@ -177,7 +156,7 @@ public class Controller {
 			if (deltaSleep >= 30.0) {
 				this.player.setGoingToSleep(true);
 				
-				if (deltaSleep >= 31.0) {
+				if (deltaSleep >= 32.0) {
 					this.player.setSleep(true);
 //					this.sleepTime = System.nanoTime() / (double)1000000000L;
 				}

@@ -403,9 +403,9 @@ public class Model {
 			} // animation step
 		} // animation
 		
-		for (int i = 0; i < this.animationFrames.size(); i++) {
-			System.out.println(this.animationFrames.get(i));
-		}
+//		for (int i = 0; i < this.animationFrames.size(); i++) {
+//			System.out.println(this.animationFrames.get(i));
+//		}
 		
 		
 		float spriteWidth = (float)this.tex.getWidth() / this.maxAnimationSteps;
@@ -483,7 +483,6 @@ public class Model {
 	}
 	
 	public void setIdle(boolean idle) {
-		
 		if (idle) {
 			if (this.animation != 5) {
 				this.animation = 5;
@@ -539,6 +538,15 @@ public class Model {
 		}
 	}
 	
+	public void setCurrentAnimation(int animation) {
+		if (animation >= 0 && animation <= this.animationsCount) {
+			if (this.animation != animation) {
+				this.animation = animation;
+				this.animationPosition = 0;
+				this.counter = Math.round(60 / this.animationSpeed) - 1;
+			}
+		}
+	}
 	
 	public void setAnimations(int number) {
 		this.animationsCount = number;
@@ -683,6 +691,10 @@ public class Model {
 //		this.TEXVBOid = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
 		glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
+	}
+	
+	public float getScaleMul() {
+		return(this.scaleValue * this.scaleMul);
 	}
 	
 }
