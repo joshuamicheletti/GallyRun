@@ -1,7 +1,13 @@
 package com.test;
 
+import java.security.KeyStore.Entry;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.joml.Vector2f;
 import org.joml.Vector4f;
@@ -37,6 +43,11 @@ public class Entity {
 	
 	protected boolean hitbox;
 	
+	protected boolean canForcePosX;
+	protected boolean canForcePosY;
+	protected boolean canForceNegX;
+	protected boolean canForceNegY;
+	
 
 	public Entity() {
 		this.model = new Model();
@@ -64,6 +75,11 @@ public class Entity {
 		this.facingRight = true;
 		
 		this.hitbox = false;
+		
+		this.canForcePosX = true;
+		this.canForcePosY = true;
+		this.canForceNegX = true;
+		this.canForceNegY = true;
 	}
 	
 	public void setName(String name) {
@@ -78,132 +94,102 @@ public class Entity {
 		if (this.canCollide) {
 			
 			this.newPositionX = this.model.getX();
-			this.newPositionY = this.model.getY();
-			
+			this.newPositionY = this.model.getY();	
+		
 			List<Vector4f> entityBB = this.model.calculateBoundingBox(this.hitbox);
 			
-			int contacts = 0;
+			float sizeX = Math.abs(entityBB.get(0).x - entityBB.get(2).x);
+			float sizeY = Math.abs(entityBB.get(0).y - entityBB.get(2).y);
 			
 			this.airborne = true;
-			this.stuck = false;
+			this.stuck = false;	
 			
+			Collections.sort(worldHitboxes, new Comparator<Hitbox>() {
+				public int compare(Hitbox first, Hitbox second) {
+					
+					float dist1 = Math.abs(model.getX() - first.getCenterX());
+					float dist2 = Math.abs(model.getX() - second.getCenterX());
+					
+					return(dist1 == dist2 ? 0 : dist1 < dist2 ? -1 : 1);
+				}
+			});
 			
 			for (int i = 0; i < worldHitboxes.size(); i++) {				
 				Vector2f objectBB0 = new Vector2f(worldHitboxes.get(i).getX0(), worldHitboxes.get(i).getY0());
-				Vector2f objectBB2 = new Vector2f(worldHitboxes.get(i).getX2(), worldHitboxes.get(i).getY2());		
+				Vector2f objectBB2 = new Vector2f(worldHitboxes.get(i).getX2(), worldHitboxes.get(i).getY2());
 				
-				if (((entityBB.get(0).x >= objectBB2.x && entityBB.get(0).x <  objectBB0.x) ||
-					( entityBB.get(2).x >= objectBB2.x && entityBB.get(2).x <  objectBB0.x) ||
-					( entityBB.get(2).x <= objectBB2.x && entityBB.get(0).x >= objectBB0.x)) &&
-					((entityBB.get(0).y >= objectBB2.y && entityBB.get(0).y <  objectBB0.y) ||
-					( entityBB.get(2).y >= objectBB2.y && entityBB.get(2).y <  objectBB0.y) ||
-					( entityBB.get(2).y <= objectBB2.y && entityBB.get(0).y >= objectBB0.y))) {
+				if (entityBB.get(0).x > objectBB2.x && // LEFT
+					entityBB.get(2).x < objectBB0.x && // RIGHT
+					entityBB.get(2).y < objectBB0.y && // TOP
+					entityBB.get(0).y > objectBB2.y) { // BOTTOM
 
-					contacts++;
-					
 					List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
 					
-					if ((prevEntityBB.get(0).x >= objectBB2.x && prevEntityBB.get(0).x < objectBB0.x) ||
-						(prevEntityBB.get(2).x >= objectBB2.x && prevEntityBB.get(2).x < objectBB0.x) ||
-						(prevEntityBB.get(2).x <= objectBB2.x && prevEntityBB.get(0).x >= objectBB0.x)) {
-						if (prevEntityBB.get(2).y >= objectBB0.y) { // COMING FROM UP
-							this.newPositionY = objectBB0.y + Math.abs(this.model.getY() - entityBB.get(2).y) + 0.1f;
-							this.airborne = false;
-						}
-						else if (prevEntityBB.get(0).y <= objectBB2.y) { // COMING FROM DOWN
-							this.newPositionY = objectBB2.y - Math.abs(entityBB.get(2).y - this.newPositionY) - 0.1f;
-							this.stuck = true;				
-						}
+					if (prevEntityBB.get(0).x < objectBB2.x) { // LEFT
+						this.newPositionX = objectBB2.x - (sizeX / 2) - 0.1f;
+						this.velocityX = 0;
+					} else if (prevEntityBB.get(2).x > objectBB0.x) { // RIGHT
+						this.newPositionX = objectBB0.x + (sizeX / 2) + 0.1f;
+						this.velocityX = 0;
+					} else if (prevEntityBB.get(2).y > objectBB0.y) { // TOP
+						this.newPositionY = objectBB0.y + (sizeY / 2) + 0.1f;
+						this.velocityY = 0;
+						this.airborne = false;
+					} else if (prevEntityBB.get(0).y < objectBB2.y) { // BOTTOM
+						this.newPositionY = objectBB2.y - (sizeY / 2) - 0.1f;
 						this.velocityY = 0;
 					}
 					
-					else if ((prevEntityBB.get(0).y >= objectBB2.y && prevEntityBB.get(0).y < objectBB0.y) ||
-							 (prevEntityBB.get(2).y >= objectBB2.y && prevEntityBB.get(2).y < objectBB0.y) ||
-							 (prevEntityBB.get(2).y <= objectBB2.y && prevEntityBB.get(0).y >= objectBB0.y)) {
-						
-						if (prevEntityBB.get(0).x <= objectBB2.x) { // COMING FROM LEFT
-							this.newPositionX = objectBB2.x - Math.abs(this.model.getX() - entityBB.get(2).x) - 0.001f;
-						}
-						else if (prevEntityBB.get(2).x >= objectBB0.x) { // COMING FROM RIGHT
-							this.newPositionX = objectBB0.x + Math.abs(this.model.getX() - entityBB.get(2).x) + 0.001f;
-						}
-						this.velocityX = 0;
-					}
+					this.model.rollbackPosition(this.newPositionX, this.newPositionY);
 					
-					else {
-						this.newPositionX = this.model.getPrevX();
-						this.newPositionY = this.model.getPrevY();
-					}
-				}
-				
-				if (objectBB2.y >= entityBB.get(0).y && objectBB2.y <= entityBB.get(0).y + 0.01f) {
-					this.stuck = true;
+					entityBB = this.model.calculateBoundingBox(this.hitbox);
 				}
 			}
 			
 			
-			for (int i = 0; i < entityBuffer.size(); i++) {
-				
-				if (this != entityBuffer.get(i) && entityBuffer.get(i).canCollide()) {
-					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(entityBuffer.get(i).getHitbox());
+			for (int i = 0; i < entityBuffer.size(); i++) {				
+				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
 					
-					if (((entityBB.get(0).x >= objectBB.get(2).x && entityBB.get(0).x <  objectBB.get(0).x) ||
-						( entityBB.get(2).x >= objectBB.get(2).x && entityBB.get(2).x <  objectBB.get(0).x) ||
-						( entityBB.get(2).x <= objectBB.get(2).x && entityBB.get(0).x >= objectBB.get(0).x)) &&
-						((entityBB.get(0).y >= objectBB.get(2).y && entityBB.get(0).y <  objectBB.get(0).y) ||
-						( entityBB.get(2).y >= objectBB.get(2).y && entityBB.get(2).y <  objectBB.get(0).y) ||
-						( entityBB.get(2).y <= objectBB.get(2).y && entityBB.get(0).y >= objectBB.get(0).y))) {
+					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
+					
+					if (entityBB.get(0).x > objectBB.get(2).x && // LEFT
+						entityBB.get(2).x < objectBB.get(0).x && // RIGHT
+						entityBB.get(2).y < objectBB.get(0).y && // TOP
+						entityBB.get(0).y > objectBB.get(2).y) { // BOTTOM
 
-						contacts++;
-						
 						List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
 						
-						
-						if ((prevEntityBB.get(0).x >= objectBB.get(2).x && prevEntityBB.get(0).x < objectBB.get(0).x) ||
-							(prevEntityBB.get(2).x >= objectBB.get(2).x && prevEntityBB.get(2).x < objectBB.get(0).x) ||
-							(prevEntityBB.get(2).x <= objectBB.get(2).x && prevEntityBB.get(0).x >= objectBB.get(0).x)) {
-							if (prevEntityBB.get(2).y >= objectBB.get(0).y) { // COMING FROM UP
-								this.newPositionY = objectBB.get(0).y + Math.abs(this.newPositionY - entityBB.get(2).y) + 0.001f;
-								this.airborne = false;
-							}
-							else if (prevEntityBB.get(0).y <= objectBB.get(2).y) { // COMING FROM DOWN
-								this.newPositionY = objectBB.get(2).y - Math.abs(entityBB.get(2).y - this.newPositionY) - 0.001f;
-								this.stuck = true;				
-							}
+						if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
+							this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.1f;
+							this.velocityX = 0;
+						} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
+							this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
+							this.velocityX = 0;
+						} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
+							this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
+							this.velocityY = 0;
+							this.airborne = false;
+						} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
+							this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;
 							this.velocityY = 0;
 						}
 						
-						else if ((prevEntityBB.get(0).y >= objectBB.get(2).y && prevEntityBB.get(0).y < objectBB.get(0).y) ||
-								 (prevEntityBB.get(2).y >= objectBB.get(2).y && prevEntityBB.get(2).y < objectBB.get(0).y) ||
-								 (prevEntityBB.get(2).y <= objectBB.get(2).y && prevEntityBB.get(0).y >= objectBB.get(0).y)) {
-							
-							if (prevEntityBB.get(0).x <= objectBB.get(2).x) { // COMING FROM LEFT
-								this.newPositionX = objectBB.get(2).x - Math.abs(this.model.getX() - entityBB.get(2).x) - 0.001f;
-							}
-							else if (prevEntityBB.get(2).x >= objectBB.get(0).x) { // COMING FROM RIGHT
-								this.newPositionX = objectBB.get(0).x + Math.abs(this.model.getX() - entityBB.get(2).x) + 0.001f;
-							}
-							this.velocityX = 0;
-						}
+						this.model.rollbackPosition(this.newPositionX, this.newPositionY);
 						
-						else {
-							this.newPositionX = this.model.getPrevX();
-							this.newPositionY = this.model.getPrevY();
-						}
-					}
-					
-					if (objectBB.get(2).y >= entityBB.get(0).y && objectBB.get(2).y <= entityBB.get(0).y + 0.01f) {
-						this.stuck = true;
+						entityBB = this.model.calculateBoundingBox(this.hitbox);
 					}
 				}
 			}
-			
-			if (contacts == 0) {
-				this.newPositionX = this.model.getX();
-				this.newPositionY = this.model.getY();
-			}
 		}
 	}
+	
+	public static <K, V> void printMap(Map<K, V> map) {
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            System.out.println("Key : " + entry.getKey() 
+				+ " Value : " + entry.getValue());
+        }
+    }
+	
 	
 	public void setCollision(boolean flag) {
 		this.canCollide = flag;
@@ -224,7 +210,30 @@ public class Entity {
 	}
 	
 	public void applyForce(float x, float y) {
-		this.forceX += x;
+		if (x >= 0) {
+			if (this.canForcePosX) {
+				this.forceX += x;
+				this.canForceNegX = true;
+			}
+		} else {
+			if (this.canForceNegX) {
+				this.forceX += x;
+				this.canForcePosX = true;			}
+		}
+		
+//		if (y >= 0) {
+//			if (this.canForcePosY) {
+//				this.forceY += y;
+//				this.canForceNegY = true;
+//			}
+//		} else {
+//			if (this.canForceNegY) {
+//				this.forceY += y;
+//				this.canForcePosY = true;
+//			}
+//		}
+		
+//		this.forceX += x;
 		this.forceY += y;
 		
 		if (this.forceX > 0) {
@@ -235,7 +244,34 @@ public class Entity {
 	}
 	
 	public void applyForcePolar(float r, float teta) {
-		this.forceX += r * (float)Math.cos(teta);
+		
+		float x = r * (float)Math.cos(teta);
+		float y = r * (float)Math.sin(teta);
+		
+		if (x >= 0) {
+			if (this.canForcePosX) {
+				this.forceX += x;
+				this.canForceNegX = true;
+			}
+		} else {
+			if (this.canForceNegX) {
+				this.forceX += x;
+				this.canForcePosX = true;			}
+		}
+		
+//		if (y >= 0) {
+//			if (this.canForcePosY) {
+//				this.forceY += y;
+//				this.canForceNegY = true;
+//			}
+//		} else {
+//			if (this.canForceNegY) {
+//				this.forceY += y;
+//				this.canForcePosY = true;
+//			}
+//		}
+		
+//		this.forceX += r * (float)Math.cos(teta);
 		this.forceY += r * (float)Math.sin(teta);
 		
 		if (this.forceX > 0) {

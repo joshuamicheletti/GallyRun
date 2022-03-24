@@ -697,4 +697,9 @@ public class Model {
 		return(this.scaleValue * this.scaleMul);
 	}
 	
+	public void setPrevPosition(float x, float y) {
+		this.prevX = x;
+		this.prevY = y;
+	}
+	
 }

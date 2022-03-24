@@ -42,7 +42,7 @@ public class Structure {
 			while (reader.hasNextLine()) {
 				String line = reader.nextLine();
 				
-				String[] values = line.split(" ");
+				String[] values = line.split("\t");
 				
 				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
 				 
@@ -67,15 +67,19 @@ public class Structure {
 			while (reader.hasNextLine()) {
 				String line = reader.nextLine();
 				
-				String[] values = line.split(" ");
+				String[] values = line.split("\t");
 				
 				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
 				 
 				for (int i = 0; i < listValues.size(); i++) {
 					if (!isNumeric(listValues.get(i))) {
 						listValues.remove(i);
-						i--;
+						
+						if (i != 0) {
+							i--;
+						}
 					}
+					
 					this.tiles[i][(rows - 1) - currentRow] = Integer.parseInt(listValues.get(i));
 				}
 		
@@ -103,7 +107,7 @@ public class Structure {
 			while (reader.hasNextLine()) {
 				String line = reader.nextLine();
 				
-				String[] values = line.split(" ");
+				String[] values = line.split("\t");
 				
 				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
 				 
@@ -117,7 +121,6 @@ public class Structure {
 				columns = listValues.size();
 				rows++;
 			}
-			
 			reader.close();
 			
 			reader = new Scanner(input);
@@ -129,18 +132,22 @@ public class Structure {
 			while (reader.hasNextLine()) {
 				String line = reader.nextLine();
 				
-				String[] values = line.split(" ");
+				String[] values = line.split("\t");
 				
 				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
 				 
 				for (int i = 0; i < listValues.size(); i++) {
 					if (!isNumeric(listValues.get(i))) {
 						listValues.remove(i);
-						i--;
+						
+						if (i != 0) {
+							i--;
+						}
 					}
+					
 					this.tiles[i][(rows - 1) - currentRow] = Integer.parseInt(listValues.get(i));
 				}
-				
+
 				boolean newHitbox = false;
 				
 				int consecutive = 0;
@@ -148,8 +155,6 @@ public class Structure {
 				int starting = 0;
 				
 				Hitbox hitbox = null;
-				
-//				System.out.println("structure.length: " + structure.length);
 				
 				for (int i = 0; i < this.tiles.length; i++) {
 					
@@ -175,9 +180,9 @@ public class Structure {
 						
 						if (consecutive != 0) {
 							this.hitboxes.add(hitbox);
-//							System.out.println("Store Hitbox");
-//							System.out.println("0(" + hitboxes.get(hitboxes.size() - 1).getX0() + ", " + hitboxes.get(hitboxes.size() - 1).getY0() + ")");
-//							System.out.println("2(" + hitboxes.get(hitboxes.size() - 1).getX2() + ", " + hitboxes.get(hitboxes.size() - 1).getY2() + ")");
+							System.out.println("Store Hitbox");
+							System.out.println("0(" + hitboxes.get(hitboxes.size() - 1).getX0() + ", " + hitboxes.get(hitboxes.size() - 1).getY0() + ")");
+							System.out.println("2(" + hitboxes.get(hitboxes.size() - 1).getX2() + ", " + hitboxes.get(hitboxes.size() - 1).getY2() + ")");
 						}
 						
 						consecutive = 0;
@@ -200,7 +205,9 @@ public class Structure {
 	public void applyStructure(int x, int y, int[][] world) {
 		for (int i = x; i < this.tiles.length + x && i < world.length; i++) {
 			for (int j = y; j < this.tiles[0].length + y && i < world[0].length; j++) {
-				world[world.length / 2 + i][world[0].length / 2 + j] = this.tiles[i - x][j - y];
+				if (this.tiles[i - x][j - y] != -1) {
+					world[world.length / 2 + i][world[0].length / 2 + j] = this.tiles[i - x][j - y];
+				}
 			}
 		}
 	}
@@ -208,7 +215,9 @@ public class Structure {
 	public void applyStructureWithHitbox(int x, int y, int[][] world, List<Hitbox> worldHitboxes) {
 		for (int i = x; i < this.tiles.length + x && i < world.length; i++) {
 			for (int j = y; j < this.tiles[0].length + y && i < world[0].length; j++) {
-				world[world.length / 2 + i][world[0].length / 2 + j] = this.tiles[i - x][j - y];
+				if (this.tiles[i - x][j - y] != -1) {
+					world[world.length / 2 + i][world[0].length / 2 + j] = this.tiles[i - x][j - y];
+				}
 			}
 		}
 		

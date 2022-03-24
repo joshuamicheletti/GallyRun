@@ -85,7 +85,7 @@ public class Engine {
 	}
 	
 	
-	public double render(List<Entity> entityBuffer, int[][] world) {
+	public double render(List<Entity> entityBuffer, int[][] world, int[][] background) {
 		double t1 = System.nanoTime();
 		
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -98,6 +98,7 @@ public class Engine {
 		
 		this.sky.renderSky(this.camera);
 		
+		this.renderTiles(background);
 		this.renderTiles(world);
 		
 		for (int i = 0; i < entityBuffer.size(); i++) {

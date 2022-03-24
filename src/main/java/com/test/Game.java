@@ -32,6 +32,7 @@ public class Game {
 	private int worldSizeX;
 	private int worldSizeY;
 	private int[][] world;
+	private int[][] background;
 	
 	private List<Hitbox> worldHitboxes;
 	
@@ -53,18 +54,19 @@ public class Game {
 		
 		this.engine = new Engine(this.window);
 		
-//		this.engine.setTileSize(32);
-		
-		this.engine.loadTiles("./assets/textures/minecraft.png", 16, 16);
+		this.engine.loadTiles("./assets/world/adventure pack/Assets.png", 25, 25);
+//		this.engine.loadTiles("./assets/world/adventure pack/Assets.png", 25, 25);
 		
 		this.worldSizeX = 256;
 		this.worldSizeY = 64;
 		
 		this.world = new int[this.worldSizeX][this.worldSizeY];
+		this.background = new int[this.worldSizeX][this.worldSizeY];
 		
 		for (int i = 0; i < this.worldSizeX; i++) {
 			for (int j = 0; j < this.worldSizeY; j++) {
 				this.world[i][j] = -1;
+				this.background[i][j] = -1;
 			}
 		}
 		
@@ -87,7 +89,7 @@ public class Game {
 			}
 			
 			if (this.engine.canRender()) {
-				double time = this.engine.render(this.getEntityBuffer(), this.world);
+				double time = this.engine.render(this.getEntityBuffer(), this.world, this.background);
 				this.timer.fps(time);
 			}
 		}
@@ -170,10 +172,10 @@ public class Game {
 		player.model.loadAnimationAndAdapt("./assets/textures/gally3.png", 3, 8);
 //		player.model.loadTextureAndAdapt("./assets/textures/gally.png");
 		player.model.setAnimationSpeed(10f);
-		player.model.setPosition(-200, 200);
-		player.setNewPosition(-200, 200);
+		player.model.setPosition(1200, 1500);
+		player.setNewPosition(1200, 1500);
 		player.setScale(0.5f);
-		player.model.setBBScale(0.75f, 0.85f);
+		player.model.setBBScale(0.75f, 1f);
 		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 2);
 		
 //		player.setGravity(0);i 
@@ -181,8 +183,8 @@ public class Game {
 //		pengu.model.setAnimations(1);
 		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2, 1);
 		pengu.model.setAnimationSpeed(1f);
-		pengu.model.setPosition(1200, 200);
-		pengu.model.setPosition(1200, 200);
+		pengu.model.setPosition(1200, 2500);
+		pengu.model.setPosition(1200, 2500);
 		
 //		blob.model.setAnimations(1);
 		blob.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 5);
@@ -205,7 +207,7 @@ public class Game {
 		
 		Hitbox groundHitbox = new Hitbox(this.engine.getTileSize() * this.worldSizeX / 2, this.engine.getTileSize() / 2, -this.engine.getTileSize() * this.worldSizeX / 2, -this.engine.getTileSize() / 2);
 		Hitbox wallLeft = new Hitbox(-900, 200, -1000, 0);
-		Hitbox wallRight = new Hitbox(-600, 200, -700, 0);
+		Hitbox wallRight = new Hitbox(-800, 200, -900, 0);
 		
 		this.worldHitboxes.add(groundHitbox);
 		this.worldHitboxes.add(wallLeft);
@@ -234,58 +236,78 @@ public class Game {
 	}
 	
 	private void loadStartingTiles() {
-		Random rand = new Random();
 		
 		for (int i = 0; i < this.worldSizeX; i++) {
-			this.world[i][this.worldSizeY / 2] = 2;
-			this.world[i][this.worldSizeY / 2 - 1] = 3;
-			
-			float ground = rand.nextFloat();
-			
-			if (ground <= 0.5f) {
-				this.world[i][this.worldSizeY / 2 - 2] = 3;
-			} else {
-				this.world[i][this.worldSizeY / 2 - 2] = 0;
-			}
-			
-			this.world[i][this.worldSizeY / 2 - 3] = 0;
-		
-			for (int j = 0; j < 2; j++) {
-				float ore = rand.nextFloat();
-				
-				if (ore <= 0.02) {
-					this.world[i][this.worldSizeY / 2 - 4 - j] = 105;
-				} else if (ore <= 0.07) {
-					this.world[i][this.worldSizeY / 2 - 4 - j] = 16;
-				} else if (ore <= 0.17){
-					this.world[i][this.worldSizeY / 2 - 4 - j] = 17;
-				} else if (ore <= 0.3) {
-					this.world[i][this.worldSizeY / 2 - 4 - j] = 18;
-				} else {
-					this.world[i][this.worldSizeY / 2 - 4 - j] = 0;
-				}
-			}
+			this.world[i][this.worldSizeY / 2] = 3;
+			this.world[i][this.worldSizeY / 2 - 1] = 3 + 25;
+			this.world[i][this.worldSizeY / 2 - 2] = 3 + 25;
 		}
+		
+//		Random rand = new Random();
+//		
+//		for (int i = 0; i < this.worldSizeX; i++) {
+//			this.world[i][this.worldSizeY / 2] = 2;
+//			this.world[i][this.worldSizeY / 2 - 1] = 3;
+//			
+//			float ground = rand.nextFloat();
+//			
+//			if (ground <= 0.5f) {
+//				this.world[i][this.worldSizeY / 2 - 2] = 3;
+//			} else {
+//				this.world[i][this.worldSizeY / 2 - 2] = 0;
+//			}
+//			
+//			this.world[i][this.worldSizeY / 2 - 3] = 0;
+//		
+//			for (int j = 0; j < 2; j++) {
+//				float ore = rand.nextFloat();
+//				
+//				if (ore <= 0.02) {
+//					this.world[i][this.worldSizeY / 2 - 4 - j] = 105;
+//				} else if (ore <= 0.07) {
+//					this.world[i][this.worldSizeY / 2 - 4 - j] = 16;
+//				} else if (ore <= 0.17){
+//					this.world[i][this.worldSizeY / 2 - 4 - j] = 17;
+//				} else if (ore <= 0.3) {
+//					this.world[i][this.worldSizeY / 2 - 4 - j] = 18;
+//				} else {
+//					this.world[i][this.worldSizeY / 2 - 4 - j] = 0;
+//				}
+//			}
+//		}
 	
+//		Structure house = new Structure();
+//		
+//		house.loadStructureWithHitbox("./assets/world/minecraft/house.str", this.engine.getTileSize());
+//		house.applyStructure(-10, 1, this.world);
+//		house.applyStructureWithHitbox(-2, 1, this.world, this.worldHitboxes);
+//		
+//		Structure tammy = new Structure();
+//		
+//		tammy.loadStructureWithHitbox("./assets/world/minecraft/tammy.str", this.engine.getTileSize());
+//		tammy.applyStructureWithHitbox(20,  1, this.world, this.worldHitboxes);
+//		
+//		Structure tree = new Structure();
+//		
+//		tree.loadStructureWithHitbox("./assets/world/minecraft/tree.str", this.engine.getTileSize());
+//		tree.applyStructure(-15, 1, this.world);
+//		tree.applyStructureWithHitbox(-30, 1, this.world, this.worldHitboxes);	
 		
-		Structure house = new Structure();
+//		Structure tree = new Structure();
+//		tree.loadStructureWithHitbox("./assets/world/minecraft/tree.str", this.engine.getTileSize());
+//		tree.applyStructureWithHitbox(0, 1, world, worldHitboxes);	
 		
-		house.loadStructureWithHitbox("./assets/world/house.str", this.engine.getTileSize());
+		Structure background = new Structure();
 		
-		house.applyStructure(-10, 1, this.world);
-		house.applyStructureWithHitbox(-2, 1, this.world, this.worldHitboxes);
+		background.loadStructure("./assets/world/adventure pack/background.str");
+		background.applyStructure(0, 1, this.background);
 		
-		Structure tammy = new Structure();
-		tammy.loadStructureWithHitbox("./assets/world/tammy.str", this.engine.getTileSize());
-		tammy.applyStructure(20,  1, this.world);
-		
-		
-		Structure tree = new Structure();
-		
-		tree.loadStructureWithHitbox("./assets/world/tree.str", this.engine.getTileSize());
-		tree.applyStructure(-15, 1, this.world);
-		tree.applyStructureWithHitbox(-30, 1, this.world, worldHitboxes);	
-		
+		Structure map = new Structure();
+//		map.loadStructureWithHitbox("./assets/world/adventure pack/map.str", this.engine.getTileSize());
+//		map.applyStructureWithHitbox(0, 0, world, worldHitboxes);
+		map.loadStructureWithHitbox("./assets/world/adventure pack/map.str", this.engine.getTileSize());
+		map.applyStructureWithHitbox(0, 1, world, worldHitboxes);
+
 		// world limit
 		
 		for (int i = 0; i < this.worldSizeX; i++) {
