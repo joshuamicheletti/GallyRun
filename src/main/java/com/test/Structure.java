@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 public class Structure {
 	private int[][] tiles;
+	private char[][] effect;
 	
 	private List<Hitbox> hitboxes;
 	
@@ -17,6 +18,7 @@ public class Structure {
 	
 	public Structure() {
 		this.tiles = null;
+		this.effect = null;
 		this.hitboxes = new ArrayList<Hitbox>();
 	}
 	
@@ -110,9 +112,11 @@ public class Structure {
 				String[] values = line.split("\t");
 				
 				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
-				 
+				
 				for (int i = 0; i < listValues.size(); i++) {
-					if (!isNumeric(listValues.get(i))) {
+					String[] components = listValues.get(i).split(" ");
+
+					if (!isNumeric(components[0])) {
 						listValues.remove(i);
 						i--;
 					}
@@ -126,6 +130,7 @@ public class Structure {
 			reader = new Scanner(input);
 			
 			this.tiles = new int[columns][rows];
+			this.effect = new char[columns][rows];
 			
 			int currentRow = 0;
 			
@@ -137,7 +142,9 @@ public class Structure {
 				List<String> listValues = new LinkedList<String>(Arrays.asList(values));;
 				 
 				for (int i = 0; i < listValues.size(); i++) {
-					if (!isNumeric(listValues.get(i))) {
+					String[] components = listValues.get(i).split(" ");
+					
+					if (!isNumeric(components[0])) {
 						listValues.remove(i);
 						
 						if (i != 0) {
@@ -145,7 +152,23 @@ public class Structure {
 						}
 					}
 					
-					this.tiles[i][(rows - 1) - currentRow] = Integer.parseInt(listValues.get(i));
+					components = listValues.get(i).split(" ");
+					
+					this.tiles[i][(rows - 1) - currentRow] = Integer.parseInt(components[0]);
+					
+					if (components.length > 1) {
+						this.effect[i][(rows - 1) - currentRow] = components[1].charAt(0);
+					} else {
+						this.effect[i][(rows - 1) - currentRow] = 'n';
+					}
+					
+//					int number = Integer.parseInt(listValues.get(i));
+//					if (Integer.parseInt(listValues.get(i)) > tilemapSize * tilemapSize) {
+//						
+//					}
+					
+				
+//					this.tiles[i][(rows - 1) - currentRow] = Integer.parseInt(components[0]);
 				}
 
 				boolean newHitbox = false;
@@ -173,6 +196,9 @@ public class Structure {
 											size * starting - size / 2,
 											size * (rows - currentRow - 1) - size / 2);
 						
+						if (this.effect[i][(rows - 1) - currentRow] == 'J') {
+							hitbox.setSpecialJump(true);
+						}
 					}
 					
 					if (this.tiles[i][(rows - 1) - currentRow] == -1 || i == this.tiles.length - 1) {
@@ -180,9 +206,9 @@ public class Structure {
 						
 						if (consecutive != 0) {
 							this.hitboxes.add(hitbox);
-							System.out.println("Store Hitbox");
-							System.out.println("0(" + hitboxes.get(hitboxes.size() - 1).getX0() + ", " + hitboxes.get(hitboxes.size() - 1).getY0() + ")");
-							System.out.println("2(" + hitboxes.get(hitboxes.size() - 1).getX2() + ", " + hitboxes.get(hitboxes.size() - 1).getY2() + ")");
+//							System.out.println("Store Hitbox");
+//							System.out.println("0(" + hitboxes.get(hitboxes.size() - 1).getX0() + ", " + hitboxes.get(hitboxes.size() - 1).getY0() + ")");
+//							System.out.println("2(" + hitboxes.get(hitboxes.size() - 1).getX2() + ", " + hitboxes.get(hitboxes.size() - 1).getY2() + ")");
 						}
 						
 						consecutive = 0;
@@ -227,9 +253,6 @@ public class Structure {
 			current.setY0(current.getY0() + (this.tileSize * y));
 			current.setX2(current.getX2() + (this.tileSize * x));
 			current.setY2(current.getY2() + (this.tileSize * y));
-//			System.out.println("SHIFTED");
-//			System.out.println("0(" + current.getX0() + ", " + current.getY0() + ")");
-//			System.out.println("2(" + current.getX2() + ", " + current.getY2() + ")");
 			worldHitboxes.add(current);
 		}
 	}

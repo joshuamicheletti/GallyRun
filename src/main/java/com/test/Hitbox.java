@@ -12,6 +12,8 @@ public class Hitbox {
 	private float width;
 	private float height;
 	
+	private boolean specialJump;
+	
 	public Hitbox(float x0, float y0, float x2, float y2) {
 		this.x0 = x0;
 		this.y0 = y0;
@@ -20,6 +22,8 @@ public class Hitbox {
 		
 		this.calculateCenter();
 		this.calculateSize();
+		
+		this.specialJump = false;
 	}
 	
 	public void setX0(float x0) {
@@ -76,5 +80,12 @@ public class Hitbox {
 	private void calculateSize() {
 		this.width = Math.abs(x0 - x2);
 		this.height = Math.abs(y0 - y2);
+	}
+	
+	public void setSpecialJump(boolean jump) {
+		this.specialJump = jump;
+	}
+	public boolean getSpecialJump() {
+		return(this.specialJump);
 	}
 }

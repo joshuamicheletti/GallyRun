@@ -48,6 +48,8 @@ public class Entity {
 	protected boolean canForceNegX;
 	protected boolean canForceNegY;
 	
+	protected boolean ableToSuperJump;
+	
 
 	public Entity() {
 		this.model = new Model();
@@ -80,6 +82,8 @@ public class Entity {
 		this.canForcePosY = true;
 		this.canForceNegX = true;
 		this.canForceNegY = true;
+		
+		this.ableToSuperJump = false;
 	}
 	
 	public void setName(String name) {
@@ -92,7 +96,6 @@ public class Entity {
 	
 	public void checkCollision(List<Entity> entityBuffer, List<Hitbox> worldHitboxes) {
 		if (this.canCollide) {
-			
 			this.newPositionX = this.model.getX();
 			this.newPositionY = this.model.getY();	
 		
@@ -114,6 +117,8 @@ public class Entity {
 				}
 			});
 			
+			this.ableToSuperJump = false;
+			
 			for (int i = 0; i < worldHitboxes.size(); i++) {				
 				Vector2f objectBB0 = new Vector2f(worldHitboxes.get(i).getX0(), worldHitboxes.get(i).getY0());
 				Vector2f objectBB2 = new Vector2f(worldHitboxes.get(i).getX2(), worldHitboxes.get(i).getY2());
@@ -132,6 +137,9 @@ public class Entity {
 						this.newPositionX = objectBB0.x + (sizeX / 2) + 0.1f;
 						this.velocityX = 0;
 					} else if (prevEntityBB.get(2).y > objectBB0.y) { // TOP
+						if (worldHitboxes.get(i).getSpecialJump()) {
+							this.ableToSuperJump = true;
+						}
 						this.newPositionY = objectBB0.y + (sizeY / 2) + 0.1f;
 						this.velocityY = 0;
 						this.airborne = false;
@@ -256,7 +264,8 @@ public class Entity {
 		} else {
 			if (this.canForceNegX) {
 				this.forceX += x;
-				this.canForcePosX = true;			}
+				this.canForcePosX = true;
+			}
 		}
 		
 //		if (y >= 0) {
@@ -351,4 +360,7 @@ public class Entity {
 		return(this.airborne);
 	}
 	
+	public boolean canSuperJump() {
+		return(this.ableToSuperJump);
+	}
 }

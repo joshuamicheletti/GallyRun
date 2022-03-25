@@ -19,8 +19,8 @@ public class Controller {
 	private double sleepTime;
 	
 	
-	public Controller(Camera camera, Player player, Engine engine) {
-		this.camera = camera;
+	public Controller(Player player, Engine engine) {
+		this.camera = engine.getCamera();
 		this.player = player;
 		this.engine = engine;
 		
@@ -99,10 +99,16 @@ public class Controller {
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GL_TRUE && !this.pressedSPACE) {
 			this.pressedSPACE = true;
 			
-//			if (this.player.canJump()) {
+			if (this.player.canJump()) {
 				this.player.setVelocity(this.player.getVelocityX(), 0);
-				this.player.applyForce(0, 1400);
-//			}
+				
+				if (this.player.canSuperJump()) {
+					this.player.applyForce(0, 4500);
+				} else {
+					this.player.applyForce(0, 1400);
+				}
+				
+			}
 		} else if (glfwGetKey(window, GLFW_KEY_SPACE) != GL_TRUE) {
 			this.pressedSPACE = false;
 		}
