@@ -33,4 +33,8 @@ public class Camera {
 		
 		return(target);
 	}
+	
+	public void setProjection(int width, int height) {
+		this.projection = new Matrix4f().setOrtho2D(-width / 2, width / 2, -height / 2, height / 2);
+	}
 }

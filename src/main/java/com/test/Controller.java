@@ -99,7 +99,7 @@ public class Controller {
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GL_TRUE && !this.pressedSPACE) {
 			this.pressedSPACE = true;
 			
-			if (this.player.canJump()) {
+//			if (this.player.canJump()) {
 				this.player.setVelocity(this.player.getVelocityX(), 0);
 				
 				if (this.player.canSuperJump()) {
@@ -108,7 +108,7 @@ public class Controller {
 					this.player.applyForce(0, 1400);
 				}
 				
-			}
+//			}
 		} else if (glfwGetKey(window, GLFW_KEY_SPACE) != GL_TRUE) {
 			this.pressedSPACE = false;
 		}

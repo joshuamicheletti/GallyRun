@@ -46,8 +46,6 @@ import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 
-
-
 public class Game {
 	private List<Entity> entityBuffer; // list containing all the entities in the game
 	
@@ -183,29 +181,16 @@ public class Game {
 		glfwSetWindowPos(this.window, (videoMode.width() - 1280) / 2, (videoMode.height() - 720) / 2);
 		// make the window visible
 		glfwShowWindow(this.window);
-		
-//		glfwSetWindowSizeCallback(this.window, this.windowResize);
-//		glfwSetFramebufferSizeCallback(this.window, function -> {
-//			
-//		});
-		
-//		GLFWFramebufferSizeCallback(this.window, resizeWindow);
-		glfwSetFramebufferSizeCallback(this.window, resizeWindow);
-//		glfwSetWindowSizeCallback();
-//		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-//			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-//				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-//		});
+		// update the framebuffer and camera to adapt to the new resolution when the window is resized
+		glfwSetFramebufferSizeCallback(this.window, this.resizeWindow);
 	}
 	
-	 private static GLFWFramebufferSizeCallback resizeWindow = new GLFWFramebufferSizeCallback(){
-			public void invoke(long window, int width, int height){
-			  glViewport(0,0,width,height);
-			  //update any other window vars you might have (aspect ratio, MVP matrices, etc)
-			}
-	  };
-	
-	
+	// callback function for updating the window resolution when it gets resized
+	private GLFWFramebufferSizeCallback resizeWindow = new GLFWFramebufferSizeCallback() {
+		public void invoke(long window, int width, int height){
+			engine.setWindowSize(width, height);
+		}
+	};
 	
 	// method for loading the entities when the game loads
 	private void loadStartingEntities() {
@@ -222,8 +207,8 @@ public class Game {
 		// setting the parameters of each object
 		player.model.loadAnimationAndAdapt("./assets/textures/gally3.png", 3, 8);
 		player.model.setAnimationSpeed(10f);
-		player.model.setPosition(1200, 1500);
-		player.setNewPosition(1200, 1500);
+		player.model.setPosition(-6000, 1500);
+		player.setNewPosition(-6000, 1500);
 		player.setScale(0.5f);
 		player.model.setBBScale(0.75f, 1f);
 		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 2);
@@ -259,26 +244,30 @@ public class Game {
 		
 		// floor for reference
 		for (int i = 0; i < this.worldSizeX; i++) {
-			this.world[i][this.worldSizeY / 2] = 3;
-			this.world[i][this.worldSizeY / 2 - 1] = 3 + 25;
-			this.world[i][this.worldSizeY / 2 - 2] = 3 + 25;
+			this.world[i][this.worldSizeY / 2] = 181;
+//			this.world[i][this.worldSizeY / 2 - 1] = 3 + 25;
+//			this.world[i][this.worldSizeY / 2 - 2] = 3 + 25;
+		}
+		
+		for (int i = 0; i < this.worldSizeY; i++) {
+			this.world[this.worldSizeX / 2][i] = 181;
 		}
 		
 		// create a background structure, this will not have hitboxes and will function as a background for the foreground tiles
 		Structure background = new Structure();
 		background.loadStructure("./assets/world/adventure pack/background.str");
-		background.applyStructure(0, 1, this.background);
+		background.applyStructure(-this.worldSizeX / 2, -this.worldSizeY / 2 + 20, this.background);
 		
 		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
 		Structure map = new Structure();
 		map.loadStructureWithHitbox("./assets/world/adventure pack/map.str", this.engine.getTileSize());
-		map.applyStructureWithHitbox(0, 1, this.world, this.worldHitboxes);
+		map.applyStructureWithHitbox(-this.worldSizeX / 2, -this.worldSizeY / 2 + 20, this.world, this.worldHitboxes);
 		
 		// additional structures to add to the existing foreground and background areas for ease of use
 		Structure jumpPower = new Structure();
 		jumpPower.loadStructure("./assets/world/adventure pack/jumpPower.str");
-		jumpPower.applyStructure(13, 6, this.world);
-		jumpPower.applyStructure(14, 6, this.world);
+		jumpPower.applyStructure(-this.worldSizeX / 2 + 31, 8, this.world);
+		jumpPower.applyStructure(-this.worldSizeX / 2 + 32, 8, this.world);
 		
 		
 		// world limit

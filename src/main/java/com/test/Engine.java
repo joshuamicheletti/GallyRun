@@ -106,6 +106,15 @@ public class Engine {
 		this.tileSet.setScale(this.tileSize / 256f);
 	}
 	
+	public void setWindowSize(int width, int height) {
+		this.w = width;
+		this.h = height;
+		
+		this.camera.setProjection(this.w, this.h);
+		
+		glViewport(0, 0, this.w, this.h);
+	}
+	
 	
 	
 	// method for rendering
