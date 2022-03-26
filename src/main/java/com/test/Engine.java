@@ -70,7 +70,7 @@ public class Engine {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
 		// create a new camera
-		this.camera = new Camera(640, 480);
+		this.camera = new Camera(1280, 720);
 		
 		// set the clear color to grey
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -80,8 +80,8 @@ public class Engine {
 		
 		// load the skybox texture
 		this.sky = new Model();
-		this.sky.loadTextureAndAdapt("./assets/textures/background2.png");
-		this.sky.setScale(0.015f);
+		this.sky.loadTextureAndAdapt("./assets/textures/blue.jpg");
+		this.sky.setScale(1 / 96f);
 		
 		// initialize flags to false
 		this.canRender = false;

@@ -23,7 +23,30 @@ import java.util.Random;
 import java.util.Scanner;
 
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
+
+import static org.lwjgl.opengl.GL11.*;
+
+import org.lwjgl.glfw.GLFWWindowSizeCallback;
+import static org.lwjgl.glfw.Callbacks.*;
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
+
+import java.nio.*;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
+
+
+
 
 public class Game {
 	private List<Entity> entityBuffer; // list containing all the entities in the game
@@ -146,7 +169,7 @@ public class Game {
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 		
 		// create a new glfw window of resolution 640x480
-		this.window = glfwCreateWindow(640, 480, "LWJGL", 0, 0);
+		this.window = glfwCreateWindow(1280, 720, "LWJGL", 0, 0);
 		
 		// check if the window was succesfully created
 		if (this.window == 0) {
@@ -157,10 +180,32 @@ public class Game {
 		GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		
 		// place the window at the center of the screen
-		glfwSetWindowPos(this.window, (videoMode.width() - 640) / 2, (videoMode.height() - 480) / 2);
+		glfwSetWindowPos(this.window, (videoMode.width() - 1280) / 2, (videoMode.height() - 720) / 2);
 		// make the window visible
 		glfwShowWindow(this.window);
+		
+//		glfwSetWindowSizeCallback(this.window, this.windowResize);
+//		glfwSetFramebufferSizeCallback(this.window, function -> {
+//			
+//		});
+		
+//		GLFWFramebufferSizeCallback(this.window, resizeWindow);
+		glfwSetFramebufferSizeCallback(this.window, resizeWindow);
+//		glfwSetWindowSizeCallback();
+//		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+//			if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+//				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+//		});
 	}
+	
+	 private static GLFWFramebufferSizeCallback resizeWindow = new GLFWFramebufferSizeCallback(){
+			public void invoke(long window, int width, int height){
+			  glViewport(0,0,width,height);
+			  //update any other window vars you might have (aspect ratio, MVP matrices, etc)
+			}
+	  };
+	
+	
 	
 	// method for loading the entities when the game loads
 	private void loadStartingEntities() {
