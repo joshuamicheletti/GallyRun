@@ -305,6 +305,18 @@ public class Entity {
 
 		this.model.setPosition(newPositionX, newPositionY);
 		
+		if (this instanceof Player) {
+			Player player = (Player)this;
+			
+			if (this.facingRight) {
+				player.allert.setPosition(this.newPositionX + this.model.getScaleMul() / 2 + this.model.getScaleMul() / 20,
+										  this.newPositionY + this.model.getScaleMul() / 2 - this.model.getScaleMul() / 10);
+			} else {
+				player.allert.setPosition(this.newPositionX - this.model.getScaleMul() / 2 - this.model.getScaleMul() / 20,
+										  this.newPositionY + this.model.getScaleMul() / 2 - this.model.getScaleMul() / 10);
+			}
+		}
+		
 		this.forceX = 0;
 		this.forceY = 0;
 	}

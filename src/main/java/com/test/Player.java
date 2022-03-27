@@ -73,6 +73,10 @@ public class Player extends Entity{
 		}
 	}
 	
+	public void rollbackPosition(float x, float y) {
+		this.model.rollbackPosition(x, y);
+	}
+	
 	public void setIdle(boolean idle) {
 		this.idle = idle;
 		this.sleeping = false;
