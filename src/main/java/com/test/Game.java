@@ -253,21 +253,40 @@ public class Game {
 			this.world[this.worldSizeX / 2][i] = 181;
 		}
 		
+		int mapX = -this.worldSizeX / 2;
+		int mapY = -this.worldSizeY / 2 + 20;
+		
 		// create a background structure, this will not have hitboxes and will function as a background for the foreground tiles
 		Structure background = new Structure();
 		background.loadStructure("./assets/world/adventure pack/background.str");
-		background.applyStructure(-this.worldSizeX / 2, -this.worldSizeY / 2 + 20, this.background);
+		background.applyStructure(mapX, mapY, this.background);
 		
-		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
-		Structure map = new Structure();
-		map.loadStructureWithHitbox("./assets/world/adventure pack/map.str", this.engine.getTileSize());
-		map.applyStructureWithHitbox(-this.worldSizeX / 2, -this.worldSizeY / 2 + 20, this.world, this.worldHitboxes);
+		
 		
 		// additional structures to add to the existing foreground and background areas for ease of use
 		Structure jumpPower = new Structure();
 		jumpPower.loadStructure("./assets/world/adventure pack/jumpPower.str");
-		jumpPower.applyStructure(-this.worldSizeX / 2 + 31, 8, this.world);
-		jumpPower.applyStructure(-this.worldSizeX / 2 + 32, 8, this.world);
+//		jumpPower.applyStructure(-this.worldSizeX / 2 + 31, 8, this.world);
+//		jumpPower.applyStructure(-this.worldSizeX / 2 + 32, 8, this.world);
+		jumpPower.applyStructure(mapX + 31, mapY + 20, this.world);
+		jumpPower.applyStructure(mapX + 32, mapY + 20, this.world);
+		
+		Structure tree = new Structure();
+		tree.loadStructureWithHitbox("./assets/world/adventure pack/trees.str", this.engine.getTileSize());
+		tree.applyStructureWithHitbox(mapX + 3, mapY + 27, this.world, this.worldHitboxes);
+		
+		Structure treeBackground = new Structure();
+		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str");
+		treeBackground.applyStructure(mapX + 3, mapY + 27, this.background);
+		
+//		tree.applyStructure(mapX + 5, mapY + 27, this.background);
+//		treeBackground.applyStructure(mapX + 5, mapY + 27, world);
+		
+		
+		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
+		Structure map = new Structure();
+		map.loadStructureWithHitbox("./assets/world/adventure pack/map.str", this.engine.getTileSize());
+		map.applyStructureWithHitbox(mapX, mapY, this.world, this.worldHitboxes);
 		
 		
 		// world limit

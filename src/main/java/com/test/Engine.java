@@ -110,9 +110,11 @@ public class Engine {
 		this.w = width;
 		this.h = height;
 		
-		this.camera.setProjection(this.w, this.h);
+//		this.camera.setProjection(this.w, this.h);
+		this.camera.setProjection(width, height);
 		
-		glViewport(0, 0, this.w, this.h);
+//		glViewport(0, 0, this.w, this.h);
+		glViewport(0, 0, width, height);
 	}
 	
 	
