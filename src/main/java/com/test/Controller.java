@@ -99,16 +99,18 @@ public class Controller {
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GL_TRUE && !this.pressedSPACE) {
 			this.pressedSPACE = true;
 			
-//			if (this.player.canJump()) {
-				this.player.setVelocity(this.player.getVelocityX(), 0);
+			if (this.player.canJump()) {
+				
 				
 				if (this.player.canSuperJump()) {
-					this.player.applyForce(0, 4500);
+//					this.player.applyForce(0, 4500);
+					this.player.superJump();
 				} else {
-					this.player.applyForce(0, 1400);
+//					this.player.applyForce(0, 1400);
+					this.player.jump();
 				}
 				
-//			}
+			}
 		} else if (glfwGetKey(window, GLFW_KEY_SPACE) != GL_TRUE) {
 			this.pressedSPACE = false;
 		}
@@ -138,6 +140,18 @@ public class Controller {
 		} else if (S) {
 			direction = (float)Math.PI * 3f / 2f;
 			distance = speed;
+		}
+		
+		if (S) {
+			this.player.setCrouching(true);
+		} else {
+			this.player.setCrouching(false);
+		}
+		
+		if (A) {
+			this.player.facingRight(false);
+		} else if (D) {
+			this.player.facingRight(true);
 		}
 		
 		

@@ -205,7 +205,7 @@ public class Game {
 		blob.setName("blob");
 		
 		// setting the parameters of each object
-		player.model.loadAnimationAndAdapt("./assets/textures/gally3.png", 3, 8);
+		player.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
 		player.model.setAnimationSpeed(10f);
 		player.model.setPosition(-6000, 1500);
 		player.setNewPosition(-6000, 1500);
@@ -222,10 +222,30 @@ public class Game {
 		blob.model.setAnimationSpeed(5f);
 		blob.model.setPosition(-50f, 200);
 		blob.model.setScale(0.25f);
-
-		// loading them into the entityBuffer
+		
 		this.entityBuffer.add(player);
 		this.entityBuffer.add(pengu);
+		
+		for (int i = 0; i < 10; i++) {
+			Coin coin = new Coin();
+			coin.model.setScale(0.25f);
+			coin.model.setAnimationSpeed(10f);
+			coin.model.setPosition((-this.worldSizeX / 2) * this.engine.getTileSize() + ((31 + (i % 2)) * this.engine.getTileSize()),
+								   (-this.worldSizeY / 2 + 20) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
+			this.entityBuffer.add(coin);
+		}
+		
+		DoubleJump powerup = new DoubleJump();
+		
+		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 20 + 18) * this.engine.getTileSize());
+		
+		System.out.println(powerup.model.getX() + ", " + powerup.model.getY());
+		this.entityBuffer.add(powerup);
+		
+
+		// loading them into the entityBuffer
+		
+		
 //		this.entityBuffer.add(blob);
 		
 		
