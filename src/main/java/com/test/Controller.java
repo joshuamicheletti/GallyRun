@@ -109,7 +109,7 @@ public class Controller {
 //					this.player.applyForce(0, 1400);
 					this.player.jump();
 				}
-				
+//				
 			}
 		} else if (glfwGetKey(window, GLFW_KEY_SPACE) != GL_TRUE) {
 			this.pressedSPACE = false;

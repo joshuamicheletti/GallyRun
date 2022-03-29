@@ -44,6 +44,8 @@ public class Engine {
 	// size of a tile in px (width and height)
 	private int tileSize;
 	
+	private UI ui;
+	
 	
 	// Constructor
 	public Engine(long window) {
@@ -89,6 +91,8 @@ public class Engine {
 		
 		// set the tile size (64px x 64px)
 		this.tileSize = 64;
+		
+		this.ui = new UI(this.w, this.h);
 	}
 	
 	// method for loading the tileset into the engine
@@ -113,6 +117,9 @@ public class Engine {
 //		this.camera.setProjection(this.w, this.h);
 		this.camera.setProjection(width, height);
 		
+		this.ui.setWidth(this.w);
+		this.ui.setHeight(this.h);
+		
 //		glViewport(0, 0, this.w, this.h);
 		glViewport(0, 0, width, height);
 	}
@@ -127,6 +134,8 @@ public class Engine {
 		// specify what part of the framebuffer to clear at every frame and clear it
 		glClear(GL_COLOR_BUFFER_BIT);
 		
+		
+		
 		// fake load to test rendering times
 		try {
 			Thread.sleep(0);
@@ -135,7 +144,7 @@ public class Engine {
 		}
 		
 		// render the skybox
-		this.sky.renderSky(this.camera);
+		this.sky.renderSky();
 		
 		// render the background tiles
 		this.renderTiles(background);
@@ -155,6 +164,8 @@ public class Engine {
 				player.allert.render(this.camera, this.debug);
 			}
 		}
+		
+		this.ui.renderUI(this.camera);
 		
 		// swap buffers for the next render
 		glfwSwapBuffers(this.window);

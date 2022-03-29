@@ -227,7 +227,7 @@ public class Model {
 		glDisableVertexAttribArray(1);
 	}
 	
-	public void renderSky(Camera camera) {
+	public void renderSky() {
 		this.getProjection();
 		
 		this.tex.bind(0);
@@ -444,6 +444,31 @@ public class Model {
 		glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
 	}
 	
+	public void scaleHorizontal(float percentage) {
+		
+		float newBorderX = this.borderX * percentage;
+		
+		float [] vertices = new float[] {
+				-newBorderX,  this.borderY, // TOP LEFT
+				 newBorderX,  this.borderY, // TOP RIGHT
+				-newBorderX, -this.borderY, // BOTTOM LEFT
+				 newBorderX, -this.borderY  // BOTTOM RIGHT
+		};
+		
+		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
+		glBufferData(GL_ARRAY_BUFFER, createBuffer(vertices), GL_STATIC_DRAW);
+
+		
+//		float[] textureUV = new float[] {
+//				0, 0,
+//				percentage, 0,
+//				0, 1,
+//				percentage, 1
+//		};
+//		
+//		glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
+//		glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
+	}
 	
 	public void updateAnimation(boolean direction) {
 		if (this.animationSteps != 0) {

@@ -270,7 +270,7 @@ public class Player extends Entity{
 	}
 	
 	public void superJump() {
-		this.applyForce(0, 4500);
+		this.applyForce(0, 4000);
 	}
 	
 	public void setCrouching(boolean flag) {
