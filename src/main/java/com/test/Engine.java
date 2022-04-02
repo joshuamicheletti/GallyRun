@@ -165,7 +165,11 @@ public class Engine {
 			}
 		}
 		
-		this.ui.renderUI(this.camera);
+		int i;
+		
+		for (i = 0; entityBuffer.get(i).getName() != "player"; i++);
+		
+		this.ui.renderUI(this.camera, (Player)entityBuffer.get(i));
 		
 		// swap buffers for the next render
 		glfwSwapBuffers(this.window);

@@ -100,16 +100,11 @@ public class Controller {
 			this.pressedSPACE = true;
 			
 			if (this.player.canJump()) {
-				
-				
 				if (this.player.canSuperJump()) {
-//					this.player.applyForce(0, 4500);
 					this.player.superJump();
 				} else {
-//					this.player.applyForce(0, 1400);
 					this.player.jump();
-				}
-//				
+				}	
 			}
 		} else if (glfwGetKey(window, GLFW_KEY_SPACE) != GL_TRUE) {
 			this.pressedSPACE = false;

@@ -21,6 +21,10 @@ public class Player extends Entity{
 	
 	private boolean crouching;
 	
+	private int hp;
+	
+	private boolean damaged;
+	
 	
 	public Player() {
 		this.allert = new Model();
@@ -33,6 +37,10 @@ public class Player extends Entity{
 		this.additionalJumps = 0;
 		this.canDoubleJump = false;
 		this.crouching = false;
+		
+		this.hp = 200;
+		
+		this.damaged = false;
 	}
 	
 	public void updateAnimation() {
@@ -239,6 +247,16 @@ public class Player extends Entity{
 	}
 
 	
+	public int getHP() {
+		return(this.hp);
+	}
+	
+	public void doDamage(int damage) {
+		this.hp -= damage;
+		
+		this.damaged = true;
+	}
+	
 	public void addCoin() {
 		this.coins++;
 	}
@@ -279,5 +297,9 @@ public class Player extends Entity{
 	
 	public void facingRight(boolean flag) {
 		this.facingRight = flag;
+	}
+	
+	public boolean canDoubleJump() {
+		return(this.canDoubleJump);
 	}
 }

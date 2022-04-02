@@ -165,31 +165,26 @@ public class Entity {
 						entityBB.get(2).y < objectBB.get(0).y && // TOP
 						entityBB.get(0).y > objectBB.get(2).y) { // BOTTOM
 
-						if (this instanceof Player && entityBuffer.get(i) instanceof Coin) {
-							entityBuffer.remove(i);
-							i--;
-						} else {
-							List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
-							
-							if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
-								this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.1f;
-								this.velocityX = 0;
-							} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
-								this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
-								this.velocityX = 0;
-							} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
-								this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
-								this.velocityY = 0;
-								this.airborne = false;
-							} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
-								this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;
-								this.velocityY = 0;
-							}
-							
-							this.model.rollbackPosition(this.newPositionX, this.newPositionY);
-							
-							entityBB = this.model.calculateBoundingBox(this.hitbox);
+						List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
+						
+						if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
+							this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.1f;
+							this.velocityX = 0;
+						} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
+							this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
+							this.velocityX = 0;
+						} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
+							this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
+							this.velocityY = 0;
+							this.airborne = false;
+						} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
+							this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;
+							this.velocityY = 0;
 						}
+						
+						this.model.rollbackPosition(this.newPositionX, this.newPositionY);
+						
+						entityBB = this.model.calculateBoundingBox(this.hitbox);
 					}
 				}
 			}

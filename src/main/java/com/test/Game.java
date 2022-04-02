@@ -138,21 +138,27 @@ public class Game {
 		// scroll through the entities
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
 //			System.out.println("Player: " + this.findByName("player", this.entityBuffer).model.getX() + ", " + this.findByName("player", this.entityBuffer).model.getY());
+			Entity current = this.entityBuffer.get(i);
+			
+			if (current instanceof Enemy) {
+				Enemy currentEnemy = (Enemy)current;
+				currentEnemy.control();
+			}
 			
 			// calculate the new position of the entity (influenced by force, acceleration and speed)
-			this.entityBuffer.get(i).calculatePosition();
+			current.calculatePosition();
 			
 			// check for collisions against hitboxes or other entities and update the position to resolve the collision
-			this.entityBuffer.get(i).checkCollision(this.entityBuffer, this.worldHitboxes);
+			current.checkCollision(this.entityBuffer, this.worldHitboxes);
 			
 			// if we're updating the position of the player
-			if (this.entityBuffer.get(i).getName() == "player") {
+			if (current.getName() == "player") {
 				// move the camera according to the new position of the player
-				this.engine.camera.setPosition(new Vector3f(-this.entityBuffer.get(i).model.getX(), -this.entityBuffer.get(i).model.getY(), 0));
+				this.engine.camera.setPosition(new Vector3f(-current.model.getX(), -current.model.getY(), 0));
 			}
 			
 			// update the animation of the entity
-			this.entityBuffer.get(i).updateAnimation();
+			current.updateAnimation();
 		}
 	}
 	
@@ -198,11 +204,13 @@ public class Game {
 		Player player = new Player();
 		Entity pengu = new Entity();
 		Entity blob = new Entity();
+		Enemy enemy = new Enemy();
 		
 		// giving them a name
 		player.setName("player");
 		pengu.setName("Heart Pengu");
 		blob.setName("blob");
+		enemy.setName("enemy");
 		
 		// setting the parameters of each object
 		player.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
@@ -218,13 +226,20 @@ public class Game {
 		pengu.model.setPosition(1200, 2500);
 		pengu.model.setPosition(1200, 2500);
 		
-		blob.model.loadAnimationAndAdapt("./assets/textures/gally2.png", 3, 5);
-		blob.model.setAnimationSpeed(5f);
-		blob.model.setPosition(-50f, 200);
-		blob.model.setScale(0.25f);
+		enemy.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
+		enemy.model.setAnimationSpeed(10f);
+		enemy.model.setPosition(-5000, 1500);
+		enemy.model.setScale(0.25f);
+		enemy.model.setBBScale(0.75f, 1f);
+		
+		DoubleJump powerup = new DoubleJump();
+		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 20 + 18) * this.engine.getTileSize());
 		
 		this.entityBuffer.add(player);
 		this.entityBuffer.add(pengu);
+		this.entityBuffer.add(enemy);
+		this.entityBuffer.add(powerup);
+		
 		
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();
@@ -234,20 +249,8 @@ public class Game {
 								   (-this.worldSizeY / 2 + 20) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
 			this.entityBuffer.add(coin);
 		}
-		
-		DoubleJump powerup = new DoubleJump();
-		
-		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 20 + 18) * this.engine.getTileSize());
-		
-		System.out.println(powerup.model.getX() + ", " + powerup.model.getY());
-		this.entityBuffer.add(powerup);
-		
 
 		// loading them into the entityBuffer
-		
-		
-//		this.entityBuffer.add(blob);
-		
 		
 //		Hitbox groundHitbox = new Hitbox(this.engine.getTileSize() * this.worldSizeX / 2, this.engine.getTileSize() / 2, -this.engine.getTileSize() * this.worldSizeX / 2, -this.engine.getTileSize() / 2);
 //		Hitbox wallLeft = new Hitbox(-900, 200, -1000, 0);
@@ -280,8 +283,6 @@ public class Game {
 		Structure background = new Structure();
 		background.loadStructure("./assets/world/adventure pack/background.str");
 		background.applyStructure(mapX, mapY, this.background);
-		
-		
 		
 		// additional structures to add to the existing foreground and background areas for ease of use
 		Structure jumpPower = new Structure();
