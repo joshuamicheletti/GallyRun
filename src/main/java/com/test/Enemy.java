@@ -93,7 +93,7 @@ public class Enemy extends Entity {
 			
 			
 			for (int i = 0; i < entityBuffer.size(); i++) {				
-				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
+				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide && entityBuffer.get(i).canCollideEntities) {
 					
 					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
 					
@@ -110,7 +110,7 @@ public class Enemy extends Entity {
 							
 							if (entityBuffer.get(i) instanceof Player) {
 								Player player = (Player)entityBuffer.get(i);
-								player.doDamage(1);
+								player.doDamage(25);
 							}
 						} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
 							this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
@@ -118,7 +118,7 @@ public class Enemy extends Entity {
 							
 							if (entityBuffer.get(i) instanceof Player) {
 								Player player = (Player)entityBuffer.get(i);
-								player.doDamage(1);
+								player.doDamage(25);
 							}
 						} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
 							this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
@@ -127,7 +127,7 @@ public class Enemy extends Entity {
 							
 							if (entityBuffer.get(i) instanceof Player) {
 								Player player = (Player)entityBuffer.get(i);
-								player.doDamage(1);
+								player.doDamage(25);
 							}
 						} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
 							this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;

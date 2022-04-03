@@ -12,6 +12,8 @@ public class UI {
 	private Model hpBar;
 	private Model currentHP;
 	private Model doubleJump;
+	private Model coin;
+	private Model coinCounter;
 	private float counter;
 	
 	public UI(float width, float height) {
@@ -29,6 +31,16 @@ public class UI {
 		this.doubleJump = new Model();
 		this.doubleJump.loadTextureAndAdapt("./assets/textures/doubleJumpUI.png");
 		this.doubleJump.setScale(0.25f);
+		
+		this.coinCounter = new Model();
+		this.coinCounter.loadAnimationAndAdapt("./assets/textures/fontV.png", 1, 11);
+//		this.coinCounter.loadTextureAndAdapt("./assets/textures/font.png");
+//		this.coinCounter.setAnimationSpeed(10f);
+		this.coinCounter.setScale(0.10f);
+		
+		this.coin = new Model();
+		this.coin.loadTextureAndAdapt("./assets/textures/coinIcon.png");
+		this.coin.setScale(0.15f);
 		
 		this.counter = 0;
 	}
@@ -57,6 +69,39 @@ public class UI {
 		
 		this.hpBar.render(camera, false);
 		this.currentHP.render(camera, false);
+		
+		this.coin.setPosition(this.width / 2 - 30, this.height / 2 - 30);
+		this.coin.render(camera, false);
+		
+		int coins = player.getCoins();
+		
+		int firstDigit;
+		int secondDigit;
+		
+		if (coins < 10) {
+			firstDigit = coins;
+			secondDigit = 0;
+		} else {
+			firstDigit = coins % 10;
+			secondDigit = (int)coins / (int)10;
+		}
+		
+		
+		this.coinCounter.setPosition(this.width / 2 - 100, this.height / 2 - 28);
+		this.coinCounter.setCurrentAnimation(secondDigit);
+		this.coinCounter.updateAnimation(true);
+		this.coinCounter.render(camera, false);
+		
+		this.coinCounter.setPosition(this.width / 2 - 80, this.height / 2 - 28);
+		this.coinCounter.setCurrentAnimation(firstDigit);
+		this.coinCounter.updateAnimation(true);
+		this.coinCounter.render(camera, false);
+		
+		this.coinCounter.setPosition(this.width / 2 - 60, this.height / 2 - 30);
+		this.coinCounter.setCurrentAnimation(10);
+		this.coinCounter.updateAnimation(true);
+		this.coinCounter.render(camera, false);
+		
 		
 		if (player.canDoubleJump()) {
 			this.doubleJump.setPosition(this.width / 2 - 40, -this.height / 2 + 40);

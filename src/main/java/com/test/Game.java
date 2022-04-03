@@ -145,6 +145,11 @@ public class Game {
 				currentEnemy.control();
 			}
 			
+			if (current instanceof Player) {
+				Player player = (Player)current;
+				player.calculateState();
+			}
+			
 			// calculate the new position of the entity (influenced by force, acceleration and speed)
 			current.calculatePosition();
 			
@@ -223,8 +228,8 @@ public class Game {
 	
 		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2, 1);
 		pengu.model.setAnimationSpeed(1f);
-		pengu.model.setPosition(1200, 2500);
-		pengu.model.setPosition(1200, 2500);
+		pengu.model.setPosition(-6700, 2500);
+		pengu.model.setPosition(-6700, 2500);
 		
 		enemy.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
 		enemy.model.setAnimationSpeed(10f);

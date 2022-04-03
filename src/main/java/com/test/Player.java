@@ -25,6 +25,8 @@ public class Player extends Entity{
 	
 	private boolean damaged;
 	
+	private double damagedTimer;
+	
 	
 	public Player() {
 		this.allert = new Model();
@@ -199,46 +201,55 @@ public class Player extends Entity{
 				}
 			}
 			
-			
-			for (int i = 0; i < entityBuffer.size(); i++) {				
-				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
-					
-					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
-					
-					if (entityBB.get(0).x > objectBB.get(2).x && // LEFT
-						entityBB.get(2).x < objectBB.get(0).x && // RIGHT
-						entityBB.get(2).y < objectBB.get(0).y && // TOP
-						entityBB.get(0).y > objectBB.get(2).y) { // BOTTOM
+			if (this.canCollideEntities) {
+				
+				for (int i = 0; i < entityBuffer.size(); i++) {				
+					if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide && entityBuffer.get(i).canCollideEntities) {
+						
+						List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
+						
+						if (entityBB.get(0).x > objectBB.get(2).x && // LEFT
+							entityBB.get(2).x < objectBB.get(0).x && // RIGHT
+							entityBB.get(2).y < objectBB.get(0).y && // TOP
+							entityBB.get(0).y > objectBB.get(2).y) { // BOTTOM
 
-						if (entityBuffer.get(i) instanceof Collectible) {
-							Collectible collectible = (Collectible)entityBuffer.get(i);
-							
-							collectible.applyEffect(this);
-							
-							
-							entityBuffer.remove(i);
-							i--;
-						} else {
-							List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
-							
-							if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
-								this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.1f;
-								this.velocityX = 0;
-							} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
-								this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
-								this.velocityX = 0;
-							} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
-								this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
-								this.velocityY = 0;
-								this.airborne = false;
-							} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
-								this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;
-								this.velocityY = 0;
+							if (entityBuffer.get(i) instanceof Collectible) {
+								Collectible collectible = (Collectible)entityBuffer.get(i);
+								
+								collectible.applyEffect(this);
+								
+								entityBuffer.remove(i);
+								i--;
+							} else {
+								List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
+								
+								if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
+									this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.1f;
+									this.velocityX = 0;
+								} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
+									this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
+									this.velocityX = 0;
+								} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
+									if (entityBuffer.get(i) instanceof Enemy) {
+										entityBuffer.remove(i);
+										this.jump();
+									} else {
+										this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
+										this.velocityY = 0;
+										this.airborne = false;
+										this.refreshJump();
+									}
+									
+									
+								} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
+									this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;
+									this.velocityY = 0;
+								}
+								
+								this.model.rollbackPosition(this.newPositionX, this.newPositionY);
+								
+								entityBB = this.model.calculateBoundingBox(this.hitbox);
 							}
-							
-							this.model.rollbackPosition(this.newPositionX, this.newPositionY);
-							
-							entityBB = this.model.calculateBoundingBox(this.hitbox);
 						}
 					}
 				}
@@ -246,19 +257,50 @@ public class Player extends Entity{
 		}
 	}
 
+	public void calculateState() {
+		if (this.damaged) {
+			double currentTime = System.nanoTime() / (double)1000000000L;
+			
+			double delta = currentTime - damagedTimer;
+			
+			if (delta >= 1) {
+				this.damaged = false;
+				this.canCollideEntities = true;
+				this.model.setOpacity(1);
+			}
+		}
+	}
+	
+	public boolean getDamagedState() {
+		return(this.damaged);
+	}
+	
 	
 	public int getHP() {
 		return(this.hp);
 	}
 	
 	public void doDamage(int damage) {
-		this.hp -= damage;
-		
-		this.damaged = true;
+		if (!this.damaged) {
+			this.hp -= damage;
+			this.damaged = true;
+			this.damagedTimer = System.nanoTime() / (double)1000000000L;
+			this.model.setOpacity(0.7f);
+//			this.canCollideEntities = false;
+			
+			if (this.hp <= 0) {
+				this.model.setPosition(-6000, 1500);
+				this.hp = 200;
+			}
+		}
 	}
 	
 	public void addCoin() {
 		this.coins++;
+	}
+	
+	public int getCoins() {
+		return(this.coins);
 	}
 	
 	public void enableDoubleJump() {
@@ -280,11 +322,23 @@ public class Player extends Entity{
 		
 		if (this.airborne) {
 			this.applyForce(0, 1400);
+			
 			this.additionalJumps--;
+			
+			if (this.additionalJumps < 0) {
+				this.additionalJumps = 0;
+			}
+			
 		} else {
 			this.applyForce(0, 1400);
 		}
 		
+	}
+	
+	public void unconditionalJump() {
+		this.setVelocity(this.getVelocityX(), 0);
+		
+		this.applyForce(0, 1400);
 	}
 	
 	public void superJump() {

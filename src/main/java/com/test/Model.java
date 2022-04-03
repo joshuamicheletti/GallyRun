@@ -70,6 +70,8 @@ public class Model {
 	private float bbBorderX2;
 	private float bbBorderY2;
 	
+	private float opacity;
+	
 	public Model() {
 		
 		float[] vertices = new float[] {
@@ -182,6 +184,8 @@ public class Model {
 		
 		this.bbScaleX = 1;
 		this.bbScaleY = 1;
+		
+		this.opacity = 1;
 	}
 	
 	public void render(Camera camera, boolean debug) {
@@ -195,6 +199,7 @@ public class Model {
 		this.shader.bind();
 		this.shader.setUniform("sampler", 0);
 		this.shader.setUniform("projection", camera.getProjection().mul(this.target));
+		this.shader.setUniform("opacity", this.opacity);
 	
 		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
@@ -238,6 +243,7 @@ public class Model {
 		this.shader.bind();
 		this.shader.setUniform("sampler", 0);
 		this.shader.setUniform("projection", this.target);
+		this.shader.setUniform("opacity", this.opacity);
 	
 		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
@@ -340,6 +346,9 @@ public class Model {
 	public void loadAnimationAndAdapt(String filename, int steps, int animations) {
 		this.tex.loadImage(filename);
 		
+//		System.out.println("w: " + this.tex.getWidth());
+//		System.out.println("h: " + this.tex.getHeight());
+		
 		this.adaptToSheet(steps, animations);
 	}
 	
@@ -413,9 +422,9 @@ public class Model {
 		if (spriteWidth > (this.tex.getHeight() / (float)this.animationsCount)) {
 			this.borderX = 0.5f;
 			this.borderY = this.borderX * (((float)this.tex.getHeight() / this.animationsCount) / spriteWidth);
-		} else if (spriteWidth < this.tex.getHeight() / (float)this.animationsCount) {
+		} else if (spriteWidth < (this.tex.getHeight() / (float)this.animationsCount)) {
 			this.borderY = 0.5f;
-			this.borderX = y * (spriteWidth / ((float)this.tex.getHeight() / this.animationsCount));
+			this.borderX = this.borderY * (spriteWidth / ((float)this.tex.getHeight() / this.animationsCount));
 		} else {
 			this.borderX = 0.5f;
 			this.borderY = 0.5f;
@@ -725,6 +734,14 @@ public class Model {
 	public void setPrevPosition(float x, float y) {
 		this.prevX = x;
 		this.prevY = y;
+	}
+	
+	public void setOpacity(float value) {
+		this.opacity = value;
+	}
+	
+	public float getOpacity() {
+		return(this.opacity);
 	}
 	
 }
