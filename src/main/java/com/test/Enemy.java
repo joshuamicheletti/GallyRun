@@ -142,6 +142,30 @@ public class Enemy extends Entity {
 			}
 		}
 	}
+
+	public void updateAnimation() {
+		if (this.airborne) {			
+			float threshold = 5f;
+			
+			if (super.velocityY > threshold && this.model.getFrames().size() >= 3) {
+				this.model.setCurrentAnimation(2);
+			} else if (this.velocityY >= -threshold && this.velocityY <= threshold  && this.model.getFrames().size() >= 4) {
+				this.model.setCurrentAnimation(3);
+			} else if (this.velocityY < -threshold  && this.model.getFrames().size() >= 5) {
+				this.model.setCurrentAnimation(4);
+			}
+		} else {			
+			float threshold = 0.02f;
 	
+			if (this.velocityX < threshold && this.velocityX > -threshold) {
+				this.model.setCurrentAnimation(0);
+			} else if (this.model.getFrames().size() >= 1) {
+				this.model.setAnimationSpeed(3f);
+				this.model.setCurrentAnimation(1);
+			}
+		}
+		
+		this.model.updateAnimation(this.facingRight);
+	}
 	
 }

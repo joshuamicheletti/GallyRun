@@ -1,49 +1,13 @@
 package com.test;
 
-import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
-import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
-import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
-import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
-import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
-import static org.lwjgl.glfw.GLFW.glfwInit;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
-import static org.lwjgl.glfw.GLFW.glfwShowWindow;
-import static org.lwjgl.glfw.GLFW.glfwTerminate;
-import static org.lwjgl.glfw.GLFW.glfwWindowHint;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
 
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWWindowSizeCallback;
 
-import static org.lwjgl.opengl.GL11.*;
-
-import org.lwjgl.glfw.GLFWWindowSizeCallback;
-import static org.lwjgl.glfw.Callbacks.*;
-import org.lwjgl.*;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
-
-import java.nio.*;
-
-import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryStack.*;
-import static org.lwjgl.system.MemoryUtil.*;
 
 
 public class Game {
@@ -68,7 +32,7 @@ public class Game {
 		
 		// initialize the buffers
 		this.entityBuffer = new ArrayList<Entity>();
-		
+
 		this.worldHitboxes = new ArrayList<Hitbox>();
 		
 		// initialize the timer
@@ -137,14 +101,15 @@ public class Game {
 	public void updateEntities() {
 		// scroll through the entities
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
-//			System.out.println("Player: " + this.findByName("player", this.entityBuffer).model.getX() + ", " + this.findByName("player", this.entityBuffer).model.getY());
 			Entity current = this.entityBuffer.get(i);
 			
+			// update the AI of the enemy
 			if (current instanceof Enemy) {
 				Enemy currentEnemy = (Enemy)current;
 				currentEnemy.control();
 			}
 			
+			// update the timers on the player
 			if (current instanceof Player) {
 				Player player = (Player)current;
 				player.calculateState();
@@ -157,7 +122,7 @@ public class Game {
 			current.checkCollision(this.entityBuffer, this.worldHitboxes);
 			
 			// if we're updating the position of the player
-			if (current.getName() == "player") {
+			if (current instanceof Player) {
 				// move the camera according to the new position of the player
 				this.engine.camera.setPosition(new Vector3f(-current.model.getX(), -current.model.getY(), 0));
 			}
@@ -255,16 +220,7 @@ public class Game {
 			this.entityBuffer.add(coin);
 		}
 
-		// loading them into the entityBuffer
-		
-//		Hitbox groundHitbox = new Hitbox(this.engine.getTileSize() * this.worldSizeX / 2, this.engine.getTileSize() / 2, -this.engine.getTileSize() * this.worldSizeX / 2, -this.engine.getTileSize() / 2);
-//		Hitbox wallLeft = new Hitbox(-900, 200, -1000, 0);
-//		Hitbox wallRight = new Hitbox(-800, 200, -900, 0);
-//		
-//		this.worldHitboxes.add(groundHitbox);
-//		this.worldHitboxes.add(wallLeft);
-//		this.worldHitboxes.add(wallRight);
-		
+		// loading them into the entityBuffer		
 	}
 	
 	// method for loading the starting tiles that compose the world
@@ -273,14 +229,13 @@ public class Game {
 		// floor for reference
 		for (int i = 0; i < this.worldSizeX; i++) {
 			this.world[i][this.worldSizeY / 2] = 181;
-//			this.world[i][this.worldSizeY / 2 - 1] = 3 + 25;
-//			this.world[i][this.worldSizeY / 2 - 2] = 3 + 25;
 		}
 		
 		for (int i = 0; i < this.worldSizeY; i++) {
 			this.world[this.worldSizeX / 2][i] = 181;
 		}
 		
+		// application position of the map (so everything can be in relation to this
 		int mapX = -this.worldSizeX / 2;
 		int mapY = -this.worldSizeY / 2 + 20;
 		
@@ -292,8 +247,6 @@ public class Game {
 		// additional structures to add to the existing foreground and background areas for ease of use
 		Structure jumpPower = new Structure();
 		jumpPower.loadStructure("./assets/world/adventure pack/jumpPower.str");
-//		jumpPower.applyStructure(-this.worldSizeX / 2 + 31, 8, this.world);
-//		jumpPower.applyStructure(-this.worldSizeX / 2 + 32, 8, this.world);
 		jumpPower.applyStructure(mapX + 31, mapY + 20, this.world);
 		jumpPower.applyStructure(mapX + 32, mapY + 20, this.world);
 		
@@ -303,11 +256,7 @@ public class Game {
 		
 		Structure treeBackground = new Structure();
 		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str");
-		treeBackground.applyStructure(mapX + 3, mapY + 27, this.background);
-		
-//		tree.applyStructure(mapX + 5, mapY + 27, this.background);
-//		treeBackground.applyStructure(mapX + 5, mapY + 27, world);
-		
+		treeBackground.applyStructure(mapX + 3, mapY + 27, this.background);	
 		
 		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
 		Structure map = new Structure();

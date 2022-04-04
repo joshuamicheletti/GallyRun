@@ -4,15 +4,10 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
 // Class for rendering models
@@ -26,6 +21,9 @@ public class Engine {
 	
 	// camera object, used for calculating perspective
 	public Camera camera;
+	
+	// object for rendering UI elements
+	private UI ui;
 	
 	// boolean flag to verify that the engine can render
 	private boolean canRender;
@@ -44,7 +42,6 @@ public class Engine {
 	// size of a tile in px (width and height)
 	private int tileSize;
 	
-	private UI ui;
 	
 	
 	// Constructor
@@ -61,8 +58,10 @@ public class Engine {
 		
 		// set the OpenGL context as the window
 		glfwMakeContextCurrent(this.window);
+		
 		// create OpenGL capabilities
 		GL.createCapabilities();
+		
 		// enable rendering of 2D textures
 		glEnable(GL_TEXTURE_2D);
 		
@@ -70,6 +69,9 @@ public class Engine {
 		glEnable(GL_BLEND);
 		// define the blending function
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		
+		// create a new UI object
+		this.ui = new UI(this.w, this.h);
 		
 		// create a new camera
 		this.camera = new Camera(1280, 720);
@@ -83,7 +85,7 @@ public class Engine {
 		// load the skybox texture
 		this.sky = new Model();
 		this.sky.loadTextureAndAdapt("./assets/textures/blue.jpg");
-		this.sky.setScale(1 / 96f);
+		this.sky.setScale(10f);
 		
 		// initialize flags to false
 		this.canRender = false;
@@ -91,8 +93,6 @@ public class Engine {
 		
 		// set the tile size (64px x 64px)
 		this.tileSize = 64;
-		
-		this.ui = new UI(this.w, this.h);
 	}
 	
 	// method for loading the tileset into the engine
@@ -110,17 +110,21 @@ public class Engine {
 		this.tileSet.setScale(this.tileSize / 256f);
 	}
 	
+	// method for changing the window size properly, it gets called everytime the window is resized
 	public void setWindowSize(int width, int height) {
+		// update the width and height reference in the engine
+		// without this update, it's possible to see in effect the camera frostum culling of the tiles
 		this.w = width;
 		this.h = height;
 		
-//		this.camera.setProjection(this.w, this.h);
+		// create a new projection matrix for the camera with the new width and height
 		this.camera.setProjection(width, height);
 		
+		// update the reference for the UI to calculate the position of the UI elements
 		this.ui.setWidth(this.w);
 		this.ui.setHeight(this.h);
 		
-//		glViewport(0, 0, this.w, this.h);
+		// update the OpenGL framebuffer size to render to the new window
 		glViewport(0, 0, width, height);
 	}
 	
@@ -135,21 +139,38 @@ public class Engine {
 		glClear(GL_COLOR_BUFFER_BIT);
 		
 		
-		
 		// fake load to test rendering times
 		try {
-			Thread.sleep(0);
+			Thread.sleep(0); // the number in parentesis is the number of ms added to render each frame
 		} catch (InterruptedException e) {
 			System.out.println(e);
 		}
 		
+		// ----------------- SKYBOX --------------------
+		
+		// store the current camera position
+		Vector3f cameraPosition = camera.getPosition();
+		// place the camera at the center
+		camera.setPosition(new Vector3f(0, 0, 0));
 		// render the skybox
-		this.sky.renderSky();
+		this.sky.render(camera, false);
+		// restore the previous camera position
+		camera.setPosition(cameraPosition);
+		// this process allows the sky to remain at the center of the camera, no matter how it moves
+		
+		
+		// ------------------ TILES --------------------
 		
 		// render the background tiles
 		this.renderTiles(background);
 		// render the foreground tiles
 		this.renderTiles(world);
+		
+		
+		// ------------------ ENTITIES -----------------
+		
+		// variable to store the index of the player in the entityBuffer
+		int playerIndex = -1;
 		
 		// render all the entities
 		for (int i = 0; i < entityBuffer.size(); i++) {
@@ -162,14 +183,16 @@ public class Engine {
 				Player player = (Player)entityBuffer.get(i);
 				// render the allert box
 				player.allert.render(this.camera, this.debug);
+				// store the position of the player in the entityBuffer
+				playerIndex = i;
 			}
 		}
 		
-		int i;
 		
-		for (i = 0; entityBuffer.get(i).getName() != "player"; i++);
+		// ------------------ UI ----------------------
 		
-		this.ui.renderUI(this.camera, (Player)entityBuffer.get(i));
+		// render the UI elements
+		this.ui.renderUI(this.camera, (Player)entityBuffer.get(playerIndex));
 		
 		// swap buffers for the next render
 		glfwSwapBuffers(this.window);
