@@ -232,36 +232,6 @@ public class Model {
 		glDisableVertexAttribArray(1);
 	}
 	
-	public void renderSky() {
-		this.getProjection();
-		
-		this.tex.bind(0);
-		
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		
-		this.shader.bind();
-		this.shader.setUniform("sampler", 0);
-		this.shader.setUniform("projection", this.target);
-		this.shader.setUniform("opacity", this.opacity);
-	
-		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
-		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
-		
-		glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
-		glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.INDid);
-	
-		glDrawElements(GL_TRIANGLES, this.drawCount, GL_UNSIGNED_INT, 0);
-		
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		
-		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-	}
-	
 	private FloatBuffer createBuffer(float[] data) {
 		FloatBuffer buffer = BufferUtils.createFloatBuffer(data.length);
 		
@@ -373,7 +343,7 @@ public class Model {
 				 this.borderX, -this.borderY  // BOTTOM RIGHT
 		};
 		
-		this.VBOid = glGenBuffers();
+//		this.VBOid = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
 		glBufferData(GL_ARRAY_BUFFER, createBuffer(vertices), GL_STATIC_DRAW);
 	}
@@ -437,7 +407,7 @@ public class Model {
 			 this.borderX, -this.borderY  // BOTTOM RIGHT
 		};
 		
-		this.VBOid = glGenBuffers();
+//		this.VBOid = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, this.VBOid);
 		glBufferData(GL_ARRAY_BUFFER, createBuffer(vertices), GL_STATIC_DRAW);
 		
@@ -448,7 +418,7 @@ public class Model {
 			1f / this.animationSteps, 1
 		};
 		
-		this.TEXVBOid = glGenBuffers();
+//		this.TEXVBOid = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
 		glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
 	}
