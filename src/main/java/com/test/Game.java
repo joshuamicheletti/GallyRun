@@ -112,6 +112,9 @@ public class Game {
 			// update the timers on the player
 			if (current instanceof Player) {
 				Player player = (Player)current;
+				
+//				System.out.println("x: " + player.model.getX() + ", y: " + player.model.getY());
+				
 				player.calculateState();
 			}
 			
@@ -174,42 +177,53 @@ public class Game {
 		Player player = new Player();
 		Entity pengu = new Entity();
 		Entity blob = new Entity();
-		Enemy enemy = new Enemy();
+		Enemy enemy = new Enemy(player);
+		Enemy enemy2 = new Enemy(player);
 		
 		// giving them a name
 		player.setName("player");
 		pengu.setName("Heart Pengu");
 		blob.setName("blob");
 		enemy.setName("enemy");
+		enemy2.setName("enemy2");
 		
 		// setting the parameters of each object
 		player.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
 		player.model.setAnimationSpeed(10f);
-		player.model.setPosition(-6000, 1500);
-		player.setNewPosition(-6000, 1500);
+		player.model.setPosition(-6900, 985);
+		player.setNewPosition(-6900, 985);
 		player.setScale(0.5f);
 		player.model.setBBScale(0.75f, 1f);
 		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 2);
+		player.setSleep(true);
 	
 		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2, 1);
 		pengu.model.setAnimationSpeed(1f);
 		pengu.model.setPosition(-6700, 2500);
 		pengu.model.setPosition(-6700, 2500);
 		
-		enemy.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
+		enemy.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy.model.setAnimationSpeed(10f);
 		enemy.model.setPosition(-5000, 1500);
-		enemy.model.setScale(0.25f);
+		enemy.model.setScale(0.5f);
 		enemy.model.setBBScale(0.75f, 1f);
+		enemy.setBehaviour(1);
+		
+		enemy2.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
+		enemy2.model.setAnimationSpeed(10f);
+		enemy2.model.setPosition(-6500, 800);
+		enemy2.model.setScale(0.5f);
+		enemy2.model.setBBScale(0.75f, 1f);
+		enemy2.setBehaviour(0);
 		
 		DoubleJump powerup = new DoubleJump();
 		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 20 + 18) * this.engine.getTileSize());
 		
 		this.entityBuffer.add(player);
-		this.entityBuffer.add(pengu);
+//		this.entityBuffer.add(pengu);
 		this.entityBuffer.add(enemy);
+		this.entityBuffer.add(enemy2);
 		this.entityBuffer.add(powerup);
-		
 		
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();

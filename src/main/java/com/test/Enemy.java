@@ -10,17 +10,33 @@ import org.joml.Vector4f;
 public class Enemy extends Entity {
 	
 	private boolean movingRight;
+	private Player player;
+	private int damage;
+	private int behaviour;
+	private float speed;
 	
-	public Enemy() {
+	public Enemy(Player player) {
 		this.movingRight = false;
+		this.player = player;
+		this.damage = 25;
+		this.behaviour = 0;
+		this.speed = 10f;
 	}
 	
 	public void control() {
-		if (this.movingRight) {
-			this.applyForce(20f, 0f);
-		} else {
-			this.applyForce(-20f, 0f);
-		}
+		if (behaviour == 0) {
+			if (this.movingRight) {
+				this.applyForce(this.speed, 0f);
+			} else {
+				this.applyForce(-this.speed, 0f);
+			}
+		} else if (behaviour == 1) {
+			if (this.model.getX() < this.player.model.getX()) {
+				this.applyForce(this.speed, 0f);
+			} else {
+				this.applyForce(-this.speed, 0f);
+			}
+		}	
 	}
 	
 	public void checkCollision(List<Entity> entityBuffer, List<Hitbox> worldHitboxes) {
@@ -60,14 +76,14 @@ public class Enemy extends Entity {
 					List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
 					
 					if (prevEntityBB.get(0).x < objectBB2.x) { // LEFT
-						this.newPositionX = objectBB2.x - (sizeX / 2) - 0.1f;
+						this.newPositionX = objectBB2.x - (sizeX / 2) - 0.5f;
 						this.velocityX = 0;
 						
 						if (this.movingRight == true) {
 							this.movingRight = false;
 						}
 					} else if (prevEntityBB.get(2).x > objectBB0.x) { // RIGHT
-						this.newPositionX = objectBB0.x + (sizeX / 2) + 0.1f;
+						this.newPositionX = objectBB0.x + (sizeX / 2) + 0.5f;
 						this.velocityX = 0;
 						
 						if (this.movingRight == false) {
@@ -77,11 +93,11 @@ public class Enemy extends Entity {
 						if (worldHitboxes.get(i).getSpecialJump()) {
 							this.ableToSuperJump = true;
 						}
-						this.newPositionY = objectBB0.y + (sizeY / 2) + 0.1f;
+						this.newPositionY = objectBB0.y + (sizeY / 2) + 0.5f;
 						this.velocityY = 0;
 						this.airborne = false;
 					} else if (prevEntityBB.get(0).y < objectBB2.y) { // BOTTOM
-						this.newPositionY = objectBB2.y - (sizeY / 2) - 0.1f;
+						this.newPositionY = objectBB2.y - (sizeY / 2) - 0.5f;
 						this.velocityY = 0;
 					}
 					
@@ -93,7 +109,7 @@ public class Enemy extends Entity {
 			
 			
 			for (int i = 0; i < entityBuffer.size(); i++) {				
-				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide && entityBuffer.get(i).canCollideEntities) {
+				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
 					
 					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
 					
@@ -144,7 +160,7 @@ public class Enemy extends Entity {
 	}
 
 	public void updateAnimation() {
-		if (this.airborne) {			
+		if (this.airborne && this.model.getFrames().size() >= 2) {			
 			float threshold = 5f;
 			
 			if (super.velocityY > threshold && this.model.getFrames().size() >= 3) {
@@ -168,4 +184,12 @@ public class Enemy extends Entity {
 		this.model.updateAnimation(this.facingRight);
 	}
 	
+	
+	public int getDamage() {
+		return(this.damage);
+	}
+	
+	public void setBehaviour(int behaviour) {
+		this.behaviour = behaviour;
+	}
 }
