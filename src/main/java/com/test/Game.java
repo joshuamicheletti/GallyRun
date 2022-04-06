@@ -173,6 +173,10 @@ public class Game {
 	
 	// method for loading the entities when the game loads
 	private void loadStartingEntities() {
+		int mapX = -this.worldSizeX / 2 * this.engine.getTileSize();
+		int mapY = -this.worldSizeY / 2 * this.engine.getTileSize();
+		
+		
 		// creating the entity objects
 		Player player = new Player();
 		Entity pengu = new Entity();
@@ -190,8 +194,9 @@ public class Game {
 		// setting the parameters of each object
 		player.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
 		player.model.setAnimationSpeed(10f);
-		player.model.setPosition(-6900, 985);
-		player.setNewPosition(-6900, 985);
+		player.model.setPosition(mapX + 1300, mapY + 1753);
+		player.setNewPosition(mapX + 1300, mapY + 1753);
+//		mapY + 1852
 		player.setScale(0.5f);
 		player.model.setBBScale(0.75f, 1f);
 		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 2);
@@ -204,20 +209,20 @@ public class Game {
 		
 		enemy.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy.model.setAnimationSpeed(10f);
-		enemy.model.setPosition(-5000, 1500);
+		enemy.model.setPosition(mapX + 3900, mapY + 3500);
 		enemy.model.setScale(0.5f);
 		enemy.model.setBBScale(0.75f, 1f);
 		enemy.setBehaviour(1);
 		
 		enemy2.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy2.model.setAnimationSpeed(10f);
-		enemy2.model.setPosition(-6500, 800);
+		enemy2.model.setPosition(mapX + 1700, mapY + 1160);
 		enemy2.model.setScale(0.5f);
 		enemy2.model.setBBScale(0.75f, 1f);
 		enemy2.setBehaviour(0);
 		
 		DoubleJump powerup = new DoubleJump();
-		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 20 + 18) * this.engine.getTileSize());
+		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18) * this.engine.getTileSize());
 		
 		this.entityBuffer.add(player);
 //		this.entityBuffer.add(pengu);
@@ -227,13 +232,23 @@ public class Game {
 		
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();
-			coin.model.setScale(0.25f);
-			coin.model.setAnimationSpeed(10f);
 			coin.model.setPosition((-this.worldSizeX / 2) * this.engine.getTileSize() + ((31 + (i % 2)) * this.engine.getTileSize()),
-								   (-this.worldSizeY / 2 + 20) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
+								   (-this.worldSizeY / 2) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
 			this.entityBuffer.add(coin);
 		}
 
+		Coin coin = new Coin();
+		coin.model.setPosition(mapX + 63 * this.engine.getTileSize(), mapY + 37 * this.engine.getTileSize());
+		this.entityBuffer.add(coin);
+		
+		Coin coin1 = new Coin();
+		coin1.model.setPosition(mapX + 63 * this.engine.getTileSize(), mapY + 45 * this.engine.getTileSize());
+		this.entityBuffer.add(coin1);
+		
+		Coin coin2 = new Coin();
+		coin2.model.setPosition(mapX + 67 * this.engine.getTileSize(), mapY + 41 * this.engine.getTileSize());
+		this.entityBuffer.add(coin2);
+		
 		// loading them into the entityBuffer		
 	}
 	
@@ -251,7 +266,7 @@ public class Game {
 		
 		// application position of the map (so everything can be in relation to this
 		int mapX = -this.worldSizeX / 2;
-		int mapY = -this.worldSizeY / 2 + 20;
+		int mapY = -this.worldSizeY / 2;
 		
 		// create a background structure, this will not have hitboxes and will function as a background for the foreground tiles
 		Structure background = new Structure();
@@ -271,6 +286,18 @@ public class Game {
 		Structure treeBackground = new Structure();
 		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str");
 		treeBackground.applyStructure(mapX + 3, mapY + 27, this.background);	
+		
+//		Structure backgroundTree = new Structure();
+//		backgroundTree.loadStructure("./assets/world/adventure pack/backgroundTree.str");
+//		backgroundTree.applyStructure(mapX + 58, mapY + 30, this.background);
+		
+		Structure platformTree = new Structure();
+		platformTree.loadStructureWithHitbox("./assets/world/adventure pack/platformTree.str", this.engine.getTileSize());
+		platformTree.applyStructureWithHitbox(mapX + 54, mapY + 31, this.world, this.worldHitboxes);
+		
+		Structure platformTreeB = new Structure();
+		platformTreeB.loadStructure("./assets/world/adventure pack/platformTreeB.str");
+		platformTreeB.applyStructure(mapX + 54, mapY + 31, this.background);
 		
 		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
 		Structure map = new Structure();

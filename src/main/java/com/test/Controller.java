@@ -101,7 +101,7 @@ public class Controller {
 			this.pressedSPACE = true;
 			
 			// if the player can jump
-//			if (this.player.canJump()) {
+			if (this.player.canJump()) {
 				// if the player can super jump
 				if (this.player.canSuperJump()) {
 					// superjump
@@ -110,7 +110,7 @@ public class Controller {
 					// otherwise do a normal jump
 					this.player.jump();
 				}	
-//			}
+			}
 			
 		}
 		// if the SPACEBAR key is released
