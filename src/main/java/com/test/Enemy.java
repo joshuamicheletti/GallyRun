@@ -9,11 +9,11 @@ import org.joml.Vector4f;
 
 public class Enemy extends Entity {
 	
-	private boolean movingRight;
-	private Player player;
-	private int damage;
-	private int behaviour;
-	private float speed;
+	protected boolean movingRight;
+	protected Player player;
+	protected int damage;
+	protected int behaviour;
+	protected float speed;
 	
 	public Enemy(Player player) {
 		this.movingRight = false;
@@ -126,7 +126,7 @@ public class Enemy extends Entity {
 							
 							if (entityBuffer.get(i) instanceof Player) {
 								Player player = (Player)entityBuffer.get(i);
-								player.doDamage(25);
+								player.doDamage(this.damage);
 							}
 						} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
 							this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
@@ -134,7 +134,7 @@ public class Enemy extends Entity {
 							
 							if (entityBuffer.get(i) instanceof Player) {
 								Player player = (Player)entityBuffer.get(i);
-								player.doDamage(25);
+								player.doDamage(this.damage);
 							}
 						} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
 							this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
@@ -143,7 +143,7 @@ public class Enemy extends Entity {
 							
 							if (entityBuffer.get(i) instanceof Player) {
 								Player player = (Player)entityBuffer.get(i);
-								player.doDamage(25);
+								player.doDamage(this.damage);
 							}
 						} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
 							this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;
@@ -191,5 +191,9 @@ public class Enemy extends Entity {
 	
 	public void setBehaviour(int behaviour) {
 		this.behaviour = behaviour;
+	}
+	
+	public void setSpeed(float speed) {
+		this.speed = speed;
 	}
 }

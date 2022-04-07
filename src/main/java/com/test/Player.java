@@ -242,8 +242,13 @@ public class Player extends Entity{
 								
 							} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
 								if (entityBuffer.get(i) instanceof Enemy) {
-									entityBuffer.remove(i);
-									this.jump();
+									if (entityBuffer.get(i) instanceof Boss) {
+										Boss boss = (Boss)entityBuffer.get(i);
+										boss.doDamage();
+									} else {
+										entityBuffer.remove(i);
+									}
+									this.unconditionalJump();
 								} else {
 									this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.5f;
 									this.velocityY = 0;

@@ -183,6 +183,8 @@ public class Game {
 		Entity blob = new Entity();
 		Enemy enemy = new Enemy(player);
 		Enemy enemy2 = new Enemy(player);
+		Enemy enemy3 = new Enemy(player);
+		Boss boss = new Boss(player, this.entityBuffer);
 		
 		// giving them a name
 		player.setName("player");
@@ -190,12 +192,15 @@ public class Game {
 		blob.setName("blob");
 		enemy.setName("enemy");
 		enemy2.setName("enemy2");
+		enemy3.setName("enemy3");
+		boss.setName("boss");
 		
 		// setting the parameters of each object
 		player.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
 		player.model.setAnimationSpeed(10f);
 		player.model.setPosition(mapX + 1300, mapY + 1753);
-		player.setNewPosition(mapX + 1300, mapY + 1753);
+//		player.setNewPosition(mapX + 1300, mapY + 1753);
+//		player.model.setPosition(mapX + 93 * this.engine.getTileSize(), mapY + 60 * this.engine.getTileSize());
 //		mapY + 1852
 		player.setScale(0.5f);
 		player.model.setBBScale(0.75f, 1f);
@@ -209,7 +214,7 @@ public class Game {
 		
 		enemy.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy.model.setAnimationSpeed(10f);
-		enemy.model.setPosition(mapX + 3900, mapY + 3500);
+		enemy.model.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
 		enemy.model.setScale(0.5f);
 		enemy.model.setBBScale(0.75f, 1f);
 		enemy.setBehaviour(1);
@@ -221,6 +226,21 @@ public class Game {
 		enemy2.model.setBBScale(0.75f, 1f);
 		enemy2.setBehaviour(0);
 		
+		enemy3.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
+		enemy3.model.setAnimationSpeed(10f);
+		enemy3.model.setPosition(mapX + 79 * this.engine.getTileSize(), mapY + 50 * this.engine.getTileSize());
+		enemy3.model.setScale(0.5f);
+		enemy3.model.setBBScale(0.75f, 1f);
+		enemy3.setSpeed(5);
+		enemy3.setBehaviour(1);
+		
+		boss.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
+		boss.model.setAnimationSpeed(10f);
+		boss.model.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
+		boss.model.setScale(1.5f);
+		boss.model.setBBScale(0.75f, 1f);
+		
+		
 		DoubleJump powerup = new DoubleJump();
 		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18) * this.engine.getTileSize());
 		
@@ -228,7 +248,9 @@ public class Game {
 //		this.entityBuffer.add(pengu);
 		this.entityBuffer.add(enemy);
 		this.entityBuffer.add(enemy2);
+		this.entityBuffer.add(enemy3);
 		this.entityBuffer.add(powerup);
+		this.entityBuffer.add(boss);
 		
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();
@@ -306,14 +328,14 @@ public class Game {
 		
 		
 		// world limit
-		for (int i = 0; i < this.worldSizeX; i++) {
-			for (int j = 0; j < this.worldSizeY; j++) {
-				if ((i == 0 || i == this.worldSizeX - 1) ||
-					(j == 0 || j == this.worldSizeY - 1)) {
-					world[i][j] = 181;
-				}
-			}
-		}
+//		for (int i = 0; i < this.worldSizeX; i++) {
+//			for (int j = 0; j < this.worldSizeY; j++) {
+//				if ((i == 0 || i == this.worldSizeX - 1) ||
+//					(j == 0 || j == this.worldSizeY - 1)) {
+//					world[i][j] = 181;
+//				}
+//			}
+//		}
 		
 	}
 	
