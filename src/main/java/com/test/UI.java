@@ -18,6 +18,10 @@ public class UI {
 	private Model doubleJump; // icon for the double jump powerup
 	private Model coin; // coin icon
 	private Model coinCounter; // counter of collected coins
+	private Model winCounter;
+	private Model winScreen;
+	
+	private int winTimer;
 	
 	
 	// Constructor
@@ -46,6 +50,16 @@ public class UI {
 		this.coin = new Model();
 		this.coin.loadTextureAndAdapt("./assets/textures/coinIcon.png");
 		this.coin.setScale(0.15f);
+		
+		this.winCounter = new Model();
+		this.winCounter.loadAnimationAndAdapt("./assets/textures/fontV.png", 1, 11);
+		this.winCounter.setScale(0.5f);
+		
+		this.winScreen = new Model();
+		this.winScreen.loadTextureAndAdapt("./assets/textures/win.png");
+		this.winScreen.setScale(4f);
+		
+		this.winTimer = 0;
 	}
 	
 	
@@ -141,6 +155,14 @@ public class UI {
 			this.doubleJump.render(camera, false);
 		}
 		
+		if (this.winTimer != 0) {
+			this.winCounter.setPosition(0, -220);
+			this.winCounter.setCurrentAnimation(this.winTimer);
+			this.winCounter.updateAnimation(true);
+			this.winCounter.render(camera, false);
+			this.winScreen.render(camera, false);
+		}
+		
 		// restore the original camera position
 		camera.setPosition(cameraPosition);
 	}
@@ -158,5 +180,9 @@ public class UI {
 	// map function that interpolates a value from one range to another
 	private float map(float x, float in_min, float in_max, float out_min, float out_max) {
 		  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+	}
+	
+	public void setWinTimer(int number) {
+		this.winTimer = number;
 	}
 }

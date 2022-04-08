@@ -38,6 +38,18 @@ public class Boss extends Enemy {
 					this.entityBuffer.remove(i);
 				}
 			}
+			for (int i = 0; i < 28; i++) {
+				Coin coin = new Coin();
+				coin.setGravity(1);
+				coin.model.setPosition(this.model.getX(), this.model.getY());
+				coin.applyForcePolar(1200, 3.14f / 2f + ((float)Math.random() - 0.5f) * (3.14f / 2f));
+				this.entityBuffer.add(coin);
+			}
+			
+			Portal portal = new Portal();
+			portal.model.setPosition(this.model.getX(), this.model.getY() + 40);
+			this.entityBuffer.add(0, portal);
+			
 		} else if (this.health == 2) {
 			this.speed = 30;
 			this.behaviour = 0;

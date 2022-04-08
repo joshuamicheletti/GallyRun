@@ -25,6 +25,8 @@ public class Game {
 	private Controller controller; // controller object to listen to inputs for the controls
 	private long window; // id of the window object
 	
+	private double winTimer;
+	
 	// Constructor
 	public Game() {
 		// initialize the window
@@ -46,8 +48,8 @@ public class Game {
 		this.engine.loadTiles("./assets/world/adventure pack/Assets.png", 25, 25);
 		
 		// define the world size
-		this.worldSizeX = 256;
-		this.worldSizeY = 64;
+		this.worldSizeX = 118;
+		this.worldSizeY = 69;
 		
 		// initialize the world and background tile values
 		this.world = new int[this.worldSizeX][this.worldSizeY];
@@ -68,6 +70,8 @@ public class Game {
 		
 		// initialize the controller that controls the player
 		this.controller = new Controller((Player)this.findByName("player", this.entityBuffer), this.engine);
+		
+		this.winTimer = 0;
 	}
 	
 	// Game loop
@@ -90,6 +94,10 @@ public class Game {
 				double time = this.engine.render(this.entityBuffer, this.world, this.background);
 				// print the frame time and fps info
 				this.timer.fps(time);
+			}
+			
+			if (this.winTimer != 0) {
+				this.executeWin();
 			}
 		}
 		
@@ -116,6 +124,14 @@ public class Game {
 //				System.out.println("x: " + player.model.getX() + ", y: " + player.model.getY());
 				
 				player.calculateState();
+			}
+			
+			if (current instanceof Portal) {
+				Portal portal = (Portal)current;
+				
+				if (portal.getWin() && this.winTimer == 0) {
+					this.winTimer = System.nanoTime() / 1000000000L;
+				}
 			}
 			
 			// calculate the new position of the entity (influenced by force, acceleration and speed)
@@ -174,7 +190,7 @@ public class Game {
 	// method for loading the entities when the game loads
 	private void loadStartingEntities() {
 		int mapX = -this.worldSizeX / 2 * this.engine.getTileSize();
-		int mapY = -this.worldSizeY / 2 * this.engine.getTileSize();
+		int mapY = (-this.worldSizeY / 2 + 5) * this.engine.getTileSize();
 		
 		
 		// creating the entity objects
@@ -204,7 +220,7 @@ public class Game {
 //		mapY + 1852
 		player.setScale(0.5f);
 		player.model.setBBScale(0.75f, 1f);
-		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 2);
+		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 3);
 		player.setSleep(true);
 	
 		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2, 1);
@@ -234,7 +250,7 @@ public class Game {
 		enemy3.setSpeed(5);
 		enemy3.setBehaviour(1);
 		
-		boss.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
+		boss.model.loadAnimationAndAdapt("./assets/textures/boss2.png", 2, 2);
 		boss.model.setAnimationSpeed(10f);
 		boss.model.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
 		boss.model.setScale(1.5f);
@@ -242,7 +258,7 @@ public class Game {
 		
 		
 		DoubleJump powerup = new DoubleJump();
-		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18) * this.engine.getTileSize());
+		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18 + 5) * this.engine.getTileSize());
 		
 		this.entityBuffer.add(player);
 //		this.entityBuffer.add(pengu);
@@ -255,7 +271,7 @@ public class Game {
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();
 			coin.model.setPosition((-this.worldSizeX / 2) * this.engine.getTileSize() + ((31 + (i % 2)) * this.engine.getTileSize()),
-								   (-this.worldSizeY / 2) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
+								   (-this.worldSizeY / 2 + 5) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
 			this.entityBuffer.add(coin);
 		}
 
@@ -271,21 +287,41 @@ public class Game {
 		coin2.model.setPosition(mapX + 67 * this.engine.getTileSize(), mapY + 41 * this.engine.getTileSize());
 		this.entityBuffer.add(coin2);
 		
+		Coin coin3 = new Coin();
+		coin3.model.setPosition(mapX + 93 * this.engine.getTileSize(), mapY + 55 * this.engine.getTileSize());
+		this.entityBuffer.add(coin3);
+		
+		Coin coin4 = new Coin();
+		coin4.model.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 48 * this.engine.getTileSize());
+		this.entityBuffer.add(coin4);
+		Coin coin5 = new Coin();
+		coin5.model.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 42 * this.engine.getTileSize());
+		this.entityBuffer.add(coin5);
+		Coin coin6 = new Coin();
+		coin6.model.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 36 * this.engine.getTileSize());
+		this.entityBuffer.add(coin6);
+		Coin coin7 = new Coin();
+		coin7.model.setPosition(mapX + 90 * this.engine.getTileSize(), mapY + 30 * this.engine.getTileSize());
+		this.entityBuffer.add(coin7);
+		Coin coin8 = new Coin();
+		coin8.model.setPosition(mapX + 89 * this.engine.getTileSize(), mapY + 24 * this.engine.getTileSize());
+		this.entityBuffer.add(coin8);
+		Coin coin9 = new Coin();
+		coin9.model.setPosition(mapX + 88 * this.engine.getTileSize(), mapY + 18 * this.engine.getTileSize());
+		this.entityBuffer.add(coin9);
+		Coin coin10 = new Coin();
+		coin10.model.setPosition(mapX + 86 * this.engine.getTileSize(), mapY + 14 * this.engine.getTileSize());
+		this.entityBuffer.add(coin10);
+		
+		Coin coin11 = new Coin();
+		coin11.model.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 15 * this.engine.getTileSize());
+		this.entityBuffer.add(coin11);
+		
 		// loading them into the entityBuffer		
 	}
 	
 	// method for loading the starting tiles that compose the world
 	private void loadStartingTiles() {
-		
-		// floor for reference
-		for (int i = 0; i < this.worldSizeX; i++) {
-			this.world[i][this.worldSizeY / 2] = 181;
-		}
-		
-		for (int i = 0; i < this.worldSizeY; i++) {
-			this.world[this.worldSizeX / 2][i] = 181;
-		}
-		
 		// application position of the map (so everything can be in relation to this
 		int mapX = -this.worldSizeX / 2;
 		int mapY = -this.worldSizeY / 2;
@@ -298,16 +334,16 @@ public class Game {
 		// additional structures to add to the existing foreground and background areas for ease of use
 		Structure jumpPower = new Structure();
 		jumpPower.loadStructure("./assets/world/adventure pack/jumpPower.str");
-		jumpPower.applyStructure(mapX + 31, mapY + 20, this.world);
-		jumpPower.applyStructure(mapX + 32, mapY + 20, this.world);
+		jumpPower.applyStructure(mapX + 31, mapY + 25, this.world);
+		jumpPower.applyStructure(mapX + 32, mapY + 25, this.world);
 		
 		Structure tree = new Structure();
 		tree.loadStructureWithHitbox("./assets/world/adventure pack/trees.str", this.engine.getTileSize());
-		tree.applyStructureWithHitbox(mapX + 3, mapY + 27, this.world, this.worldHitboxes);
+		tree.applyStructureWithHitbox(mapX + 3, mapY + 32, this.world, this.worldHitboxes);
 		
 		Structure treeBackground = new Structure();
 		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str");
-		treeBackground.applyStructure(mapX + 3, mapY + 27, this.background);	
+		treeBackground.applyStructure(mapX + 3, mapY + 32, this.background);	
 		
 //		Structure backgroundTree = new Structure();
 //		backgroundTree.loadStructure("./assets/world/adventure pack/backgroundTree.str");
@@ -315,11 +351,11 @@ public class Game {
 		
 		Structure platformTree = new Structure();
 		platformTree.loadStructureWithHitbox("./assets/world/adventure pack/platformTree.str", this.engine.getTileSize());
-		platformTree.applyStructureWithHitbox(mapX + 54, mapY + 31, this.world, this.worldHitboxes);
+		platformTree.applyStructureWithHitbox(mapX + 54, mapY + 36, this.world, this.worldHitboxes);
 		
 		Structure platformTreeB = new Structure();
 		platformTreeB.loadStructure("./assets/world/adventure pack/platformTreeB.str");
-		platformTreeB.applyStructure(mapX + 54, mapY + 31, this.background);
+		platformTreeB.applyStructure(mapX + 54, mapY + 36, this.background);
 		
 		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
 		Structure map = new Structure();
@@ -337,6 +373,41 @@ public class Game {
 //			}
 //		}
 		
+	}
+	
+	
+	public void executeWin() {
+		double current = System.nanoTime() / 1000000000L;
+		double delta = current - this.winTimer;
+		
+		if (delta != 0) {
+			int displayNumber = (int)delta;
+			this.engine.ui.setWinTimer(10 - displayNumber);
+			
+			if (delta >= 10) {
+				glfwSetWindowShouldClose(this.window, true);
+			}
+		}
+		
+//		if (delta >= 5) {
+//			System.out.println("CLOSE");
+//			glfwSetWindowShouldClose(this.window, true);
+//		} else if (delta >= 4) {
+//			System.out.println("1");
+//			this.engine.ui.setWinTimer(1);
+//		} else if (delta >= 3) {
+//			System.out.println("2");
+//			this.engine.ui.setWinTimer(2);
+//		} else if (delta >= 2) {
+//			System.out.println("3");
+//			this.engine.ui.setWinTimer(3);
+//		} else if (delta >= 1) {
+//			System.out.println("4");
+//			this.engine.ui.setWinTimer(4);
+//		} else if (delta >= 0) {
+//			System.out.println("5");
+//			this.engine.ui.setWinTimer(5);
+//		}
 	}
 	
 	// method for finding an entity in the entityBuffer by name

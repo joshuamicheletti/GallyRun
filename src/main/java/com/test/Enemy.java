@@ -109,7 +109,7 @@ public class Enemy extends Entity {
 			
 			
 			for (int i = 0; i < entityBuffer.size(); i++) {				
-				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
+				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide && !(entityBuffer.get(i) instanceof Collectible)) {
 					
 					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
 					

@@ -9,8 +9,8 @@ varying vec2 tex_coords;
 void main () {
 	vec4 texColor = texture2D(sampler, tex_coords);
 
-	if (texColor.a < 0.1)
+	if (texColor.a < 0.01)
 		discard;
 
-	gl_FragColor = vec4(texture2D(sampler, tex_coords).xyz, opacity);
+	gl_FragColor = vec4(texture2D(sampler, tex_coords).xyz, opacity * texColor.a);
 }

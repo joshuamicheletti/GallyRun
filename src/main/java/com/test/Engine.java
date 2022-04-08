@@ -23,7 +23,7 @@ public class Engine {
 	public Camera camera;
 	
 	// object for rendering UI elements
-	private UI ui;
+	public UI ui;
 	
 	// boolean flag to verify that the engine can render
 	private boolean canRender;

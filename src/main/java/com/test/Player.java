@@ -216,9 +216,12 @@ public class Player extends Entity{
 							
 							collectible.applyEffect(this);
 							
-							entityBuffer.remove(i);
-							i--;
-						} else {
+							if (!(collectible instanceof Portal)) {
+								entityBuffer.remove(i);
+								i--;
+							}
+						}			
+						else {
 							List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
 							
 							if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
@@ -309,7 +312,8 @@ public class Player extends Entity{
 //			this.canCollideEntities = false;
 			
 			if (this.hp <= 0) {
-				this.model.setPosition(-6000, 1500);
+				this.model.setPosition(-2476, -64);
+				this.setNewPosition(-2476, -64);
 				this.hp = 200;
 			}
 		}
