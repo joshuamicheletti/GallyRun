@@ -9,10 +9,12 @@ public class Boss extends Enemy {
 	private boolean damaged;
 	private double damagedTimer;
 	private boolean triggered;
+	private Mixer mixer;
 	
-	public Boss(Player player, List<Entity> entityBuffer) {
+	public Boss(Player player, List<Entity> entityBuffer, Mixer mixer) {
 		super(player);
 		
+		this.mixer = mixer;
 		this.entityBuffer = entityBuffer;
 		this.health = 3;
 		this.damaged = false;
@@ -29,6 +31,10 @@ public class Boss extends Enemy {
 			this.damagedTimer = System.nanoTime() / (double)1000000000L;
 			this.damaged = true;
 		}
+	}
+	
+	public boolean isTriggered() {
+		return(this.triggered);
 	}
 	
 	public void control() {
@@ -49,6 +55,10 @@ public class Boss extends Enemy {
 			Portal portal = new Portal();
 			portal.model.setPosition(this.model.getX(), this.model.getY() + 40);
 			this.entityBuffer.add(0, portal);
+			
+			this.mixer.playSong(1);
+			
+			return;
 			
 		} else if (this.health == 2) {
 			this.speed = 30;
@@ -73,6 +83,10 @@ public class Boss extends Enemy {
 		
 		if (!this.triggered) {
 			distanceToPlayer = (float)Math.sqrt(Math.pow(this.player.model.getX() - this.model.getX(), 2) + Math.pow(this.player.model.getY() - this.model.getY(), 2));
+			
+			if (distanceToPlayer <= 500) {
+				this.mixer.playSong(2);
+			}
 		}
 		
 		if (distanceToPlayer <= 500 || this.triggered) {

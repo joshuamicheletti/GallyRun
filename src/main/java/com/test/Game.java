@@ -6,8 +6,13 @@ import java.util.List;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.openal.AL;
+import org.lwjgl.openal.ALC;
+import org.lwjgl.openal.ALCCapabilities;
+import org.lwjgl.openal.ALCapabilities;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.openal.ALC10.*;
 
 
 public class Game {
@@ -26,6 +31,11 @@ public class Game {
 	private long window; // id of the window object
 	
 	private double winTimer;
+	
+	private Mixer mixer;
+	
+	private long audioContext;
+	private long audioDevice;
 	
 	// Constructor
 	public Game() {
@@ -62,6 +72,8 @@ public class Game {
 			}
 		}
 		
+		this.mixer = new Mixer();
+		
 		// load the starting tiles
 		this.loadStartingEntities();
 		
@@ -86,6 +98,11 @@ public class Game {
 				this.updateEntities();
 				// allow the renderer to render on the window (this allows to lock the framerate to the tick rate, but not vice versa
 				this.engine.enableRender();
+				
+				
+				if (this.mixer.playingSong() == 1) {
+					System.out.println("Winning song!");
+				}
 			}
 			
 			// if the engine can render to screen (once every 1/60s)
@@ -100,6 +117,10 @@ public class Game {
 				this.executeWin();
 			}
 		}
+		
+		// destroy audio
+		alcDestroyContext(this.audioContext);
+		alcCloseDevice(this.audioDevice);
 		
 		// terminate the window
 		glfwTerminate();
@@ -178,6 +199,22 @@ public class Game {
 		glfwShowWindow(this.window);
 		// update the framebuffer and camera to adapt to the new resolution when the window is resized
 		glfwSetFramebufferSizeCallback(this.window, this.resizeWindow);
+		
+		// AUDIO
+		String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
+		this.audioDevice = alcOpenDevice(defaultDeviceName);
+		
+		int[] attributes = {0};
+		this.audioContext = alcCreateContext(audioDevice, attributes);
+		
+		alcMakeContextCurrent(this.audioContext);
+		
+		ALCCapabilities alcCapabilities = ALC.createCapabilities(this.audioDevice);
+		ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
+		
+		if (!alCapabilities.OpenAL10) {
+			assert false : "Audio library not supported";
+		}
 	}
 	
 	// callback function for updating the window resolution when it gets resized
@@ -200,7 +237,7 @@ public class Game {
 		Enemy enemy = new Enemy(player);
 		Enemy enemy2 = new Enemy(player);
 		Enemy enemy3 = new Enemy(player);
-		Boss boss = new Boss(player, this.entityBuffer);
+		Boss boss = new Boss(player, this.entityBuffer, this.mixer);
 		
 		// giving them a name
 		player.setName("player");
@@ -318,6 +355,17 @@ public class Game {
 		this.entityBuffer.add(coin11);
 		
 		// loading them into the entityBuffer		
+		
+		
+		this.mixer.uploadSong("./assets/sounds/normalTheme.ogg", true);
+		this.mixer.uploadSong("./assets/sounds/winTheme.ogg", true);
+		this.mixer.uploadSong("./assets/sounds/bossTheme2.ogg", true);
+		
+		this.mixer.playSong(0);
+		
+//		Sound sound = new Sound("./assets/sounds/normalTheme.ogg", true);
+//		
+//		sound.play();
 	}
 	
 	// method for loading the starting tiles that compose the world

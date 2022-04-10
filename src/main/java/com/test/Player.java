@@ -9,6 +9,10 @@ import org.joml.Vector4f;
 
 public class Player extends Entity{
 	public Model allert;
+	private Sound hitSfx;
+	private Sound attackSfx;
+	private Sound jumpSfx;
+	private Sound superJumpSfx;
 	
 	private boolean idle;
 	private boolean sleeping;
@@ -43,6 +47,12 @@ public class Player extends Entity{
 		this.hp = 200;
 		
 		this.damaged = false;
+		
+		this.hitSfx = new Sound("./assets/sounds/hit.ogg", false);
+		this.attackSfx = new Sound("./assets/sounds/attack.ogg", false);
+		this.jumpSfx = new Sound("./assets/sounds/jump.ogg", false);
+		this.superJumpSfx = new Sound("./assets/sounds/superJump.ogg", false);
+		this.attackSfx = new Sound("./assets/sounds/attack.ogg", false);
 	}
 	
 	public void updateAnimation() {
@@ -309,6 +319,9 @@ public class Player extends Entity{
 			this.damaged = true;
 			this.damagedTimer = System.nanoTime() / (double)1000000000L;
 			this.model.setOpacity(0.7f);
+			
+			this.hitSfx.play();
+			
 //			this.canCollideEntities = false;
 			
 			if (this.hp <= 0) {
@@ -342,6 +355,7 @@ public class Player extends Entity{
 	}
 	
 	public void jump() {
+		this.jumpSfx.playRaw();
 		this.setVelocity(this.getVelocityX(), 0);
 		
 		if (this.airborne) {
@@ -360,12 +374,14 @@ public class Player extends Entity{
 	}
 	
 	public void unconditionalJump() {
+		this.attackSfx.playRaw();
 		this.setVelocity(this.getVelocityX(), 0);
 		
 		this.applyForce(0, 1400);
 	}
 	
 	public void superJump() {
+		this.superJumpSfx.playRaw();
 		this.applyForce(0, 4000);
 	}
 	
