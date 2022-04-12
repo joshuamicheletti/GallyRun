@@ -8,6 +8,8 @@ import java.nio.ShortBuffer;
 import static org.lwjgl.stb.STBVorbis.*;
 
 import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.openal.ALC10.ALC_DEFAULT_DEVICE_SPECIFIER;
+import static org.lwjgl.openal.ALC10.alcGetString;
 
 //import static org.lwjgl.system.MemoryAccessJNI.free;
 
@@ -52,17 +54,18 @@ public class Sound {
 			format = AL_FORMAT_STEREO16;
 		}
 		
-		// sound data
-		this.bufferID = alGenBuffers();
-		alBufferData(this.bufferID, format, rawAudioBuffer, sampleRate);
-		
-		this.sourceID = alGenSources();
-		
-		alSourcei(this.sourceID, AL_BUFFER, this.bufferID);
-		alSourcei(this.sourceID, AL_LOOPING, loops ? 1 : 0);
-		alSourcei(this.sourceID, AL_POSITION, 0);
-		alSourcef(this.sourceID, AL_GAIN, 0.3f); // volume
-		
+		if (alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER) != null) {
+			// sound data
+			this.bufferID = alGenBuffers();
+			alBufferData(this.bufferID, format, rawAudioBuffer, sampleRate);
+			
+			this.sourceID = alGenSources();
+			
+			alSourcei(this.sourceID, AL_BUFFER, this.bufferID);
+			alSourcei(this.sourceID, AL_LOOPING, loops ? 1 : 0);
+			alSourcei(this.sourceID, AL_POSITION, 0);
+			alSourcef(this.sourceID, AL_GAIN, 0.3f); // volume
+		}
 //		free(rawAudioBuffer);
 		
 	}
@@ -73,28 +76,34 @@ public class Sound {
 	}
 	
 	public void play() {
-		int state = alGetSourcei(this.sourceID, AL_SOURCE_STATE);
-		
-		if (state == AL_STOPPED) {
-			this.isPlaying = false;
-			alSourcei(this.sourceID, AL_POSITION, 0);
-		}
-		
-		if (!this.isPlaying) {
-			alSourcePlay(this.sourceID);
-			this.isPlaying = true;
+		if (alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER) != null) {
+			int state = alGetSourcei(this.sourceID, AL_SOURCE_STATE);
+			
+			if (state == AL_STOPPED) {
+				this.isPlaying = false;
+				alSourcei(this.sourceID, AL_POSITION, 0);
+			}
+			
+			if (!this.isPlaying) {
+				alSourcePlay(this.sourceID);
+				this.isPlaying = true;
+			}
 		}
 	}
 	
 	public void playRaw() {
-		alSourcei(this.sourceID, AL_POSITION, 0);
-		alSourcePlay(this.sourceID);
+		if (alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER) != null) {
+			alSourcei(this.sourceID, AL_POSITION, 0);
+			alSourcePlay(this.sourceID);
+		}
 	}
 	
 	public void stop() {
-		if (this.isPlaying) {
-			alSourceStop(this.sourceID);
-			this.isPlaying = false;
+		if (alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER) != null) {
+			if (this.isPlaying) {
+				alSourceStop(this.sourceID);
+				this.isPlaying = false;
+			}
 		}
 	}
 	
@@ -103,15 +112,18 @@ public class Sound {
 	}
 	
 	public boolean isPlaying() {
-		int state = alGetSourcei(this.sourceID, AL_SOURCE_STATE);
-		if (state == AL_STOPPED) {
-			this.isPlaying = false;
+		if (alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER) != null) {
+			int state = alGetSourcei(this.sourceID, AL_SOURCE_STATE);
+			if (state == AL_STOPPED) {
+				this.isPlaying = false;
+			}
 		}
-		
 		return(this.isPlaying);
 	}
 	
 	public void setVolume(float volume) {
-		alSourcef(this.sourceID, AL_GAIN, volume); // volume
+		if (alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER) != null) {
+			alSourcef(this.sourceID, AL_GAIN, volume); // volume
+		}
 	}
 }

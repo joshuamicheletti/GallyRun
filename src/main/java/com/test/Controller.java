@@ -177,7 +177,7 @@ public class Controller {
 		
 		
 		// check if the player should go into idle and sleeping animations
-		if (!A && !D && !this.player.isAirborne()) {
+		if (!A && !D && !S && !this.player.isAirborne()) {
 			// check the current time
 			double timeNow = System.nanoTime() / (double)1000000000L;
 			// calculate the time elapsed for idling

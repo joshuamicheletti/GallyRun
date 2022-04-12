@@ -202,18 +202,23 @@ public class Game {
 		
 		// AUDIO
 		String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
-		this.audioDevice = alcOpenDevice(defaultDeviceName);
 		
-		int[] attributes = {0};
-		this.audioContext = alcCreateContext(audioDevice, attributes);
-		
-		alcMakeContextCurrent(this.audioContext);
-		
-		ALCCapabilities alcCapabilities = ALC.createCapabilities(this.audioDevice);
-		ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
-		
-		if (!alCapabilities.OpenAL10) {
-			assert false : "Audio library not supported";
+		if (defaultDeviceName == null) {
+			System.out.println("No audio device found");
+		} else {
+			this.audioDevice = alcOpenDevice(defaultDeviceName);
+			
+			int[] attributes = {0};
+			this.audioContext = alcCreateContext(audioDevice, attributes);
+			
+			alcMakeContextCurrent(this.audioContext);
+			
+			ALCCapabilities alcCapabilities = ALC.createCapabilities(this.audioDevice);
+			ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
+			
+			if (!alCapabilities.OpenAL10) {
+				assert false : "Audio library not supported";
+			}
 		}
 	}
 	
