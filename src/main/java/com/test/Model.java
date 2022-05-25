@@ -569,93 +569,56 @@ public class Model {
 		return(this.prevY);
 	}
 	
-	public List<Vector4f> calculateBoundingBox(boolean hitbox) {
-		if (hitbox) {
-			List<Vector4f> boundingPoints = new ArrayList();
-			
-			Vector4f position1 = new Vector4f(this.bbBorderX0, this.bbBorderY0, 1, 1);
-			Vector4f position2 = new Vector4f(this.bbBorderX0, this.bbBorderY2, 1, 1);
-			Vector4f position3 = new Vector4f(this.bbBorderX2, this.bbBorderY2, 1, 1);
-			Vector4f position4 = new Vector4f(this.bbBorderX2, this.bbBorderY0, 1, 1);
-			
-			boundingPoints.add(position1);
-			boundingPoints.add(position2);
-			boundingPoints.add(position3);
-			boundingPoints.add(position4);
-			
-			return(boundingPoints);
-			
-		} else {
-			this.getProjection();
-			
-			Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
-			Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-			Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-			Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
-			
-			position1.mul(this.target, position1);
-			position2.mul(this.target, position2);
-			position3.mul(this.target, position3);
-			position4.mul(this.target, position4);
-			
-			List<Vector4f> boundingPoints = new ArrayList();
-			
-			boundingPoints.add(position1);
-			boundingPoints.add(position2);
-			boundingPoints.add(position3);
-			boundingPoints.add(position4);
-			
+	public List<Vector4f> calculateBoundingBox() {
+		this.getProjection();
+		
+		Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+		Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+		
+		position1.mul(this.target, position1);
+		position2.mul(this.target, position2);
+		position3.mul(this.target, position3);
+		position4.mul(this.target, position4);
+		
+		List<Vector4f> boundingPoints = new ArrayList();
+		
+		boundingPoints.add(position1);
+		boundingPoints.add(position2);
+		boundingPoints.add(position3);
+		boundingPoints.add(position4);
+		
 //			System.out.println("Bounding Box: (" + position.x + ", " + position.y + ")");
-			
-			return(boundingPoints);
-		}
 		
-		
+		return(boundingPoints);		
 	}
 	
-	public List<Vector4f> calculatePrevBoundingBox(boolean hitbox) {
-		if (hitbox) {
-			List<Vector4f> boundingPoints = new ArrayList();
-			
-			Vector4f position1 = new Vector4f(this.bbBorderX0, this.bbBorderY0, 1, 1);
-			Vector4f position2 = new Vector4f(this.bbBorderX0, this.bbBorderY2, 1, 1);
-			Vector4f position3 = new Vector4f(this.bbBorderX2, this.bbBorderY2, 1, 1);
-			Vector4f position4 = new Vector4f(this.bbBorderX2, this.bbBorderY0, 1, 1);
-			
-			boundingPoints.add(position1);
-			boundingPoints.add(position2);
-			boundingPoints.add(position3);
-			boundingPoints.add(position4);
-			
-			return(boundingPoints);
-			
-		} else {
+	public List<Vector4f> calculatePrevBoundingBox() {
+		Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
+		Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
+		Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
 		
-			Vector4f position1 = new Vector4f( this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
-			Vector4f position2 = new Vector4f( this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-			Vector4f position3 = new Vector4f(-this.borderX * this.bbScaleX, -this.borderY, 1, 1);
-			Vector4f position4 = new Vector4f(-this.borderX * this.bbScaleX,  this.borderY * this.bbScaleY, 1, 1);
-			
-			Matrix4f prevTarget = new Matrix4f();
-			
-			prevTarget.mul(new Matrix4f().translate(this.prevX, this.prevY, 0), prevTarget);
-			prevTarget.mul(this.rotation, prevTarget);
-			prevTarget.mul(this.scale, prevTarget);
-			
-			position1.mul(prevTarget, position1);
-			position2.mul(prevTarget, position2);
-			position3.mul(prevTarget, position3);
-			position4.mul(prevTarget, position4);
-			
-			List<Vector4f> boundingPoints = new ArrayList();
-			
-			boundingPoints.add(position1);
-			boundingPoints.add(position2);
-			boundingPoints.add(position3);
-			boundingPoints.add(position4);
-			
-			return(boundingPoints);
-		}
+		Matrix4f prevTarget = new Matrix4f();
+		
+		prevTarget.mul(new Matrix4f().translate(this.prevX, this.prevY, 0), prevTarget);
+		prevTarget.mul(this.rotation, prevTarget);
+		prevTarget.mul(this.scale, prevTarget);
+		
+		position1.mul(prevTarget, position1);
+		position2.mul(prevTarget, position2);
+		position3.mul(prevTarget, position3);
+		position4.mul(prevTarget, position4);
+		
+		List<Vector4f> boundingPoints = new ArrayList();
+		
+		boundingPoints.add(position1);
+		boundingPoints.add(position2);
+		boundingPoints.add(position3);
+		boundingPoints.add(position4);
+		
+		return(boundingPoints);
 	}
 
 	public void setBBScale(float x, float y) {

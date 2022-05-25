@@ -71,7 +71,7 @@ public class UI {
 		camera.setPosition(new Vector3f(0, 0, 0));
 		
 		// get the dimensions of the hp bar container
-		List<Vector4f> boundingBox = this.hpBar.calculateBoundingBox(false);
+		List<Vector4f> boundingBox = this.hpBar.calculateBoundingBox();
 		
 		// calculate the width and height of the hp bar container
 		float objectWidth = Math.abs(this.hpBar.getX() - boundingBox.get(2).x) * 2;

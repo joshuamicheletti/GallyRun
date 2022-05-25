@@ -146,150 +146,150 @@ public class Player extends Entity{
 	}
 	
 	public void setScale(float scale) {
-		this.model.setScale(scale);
+		super.setScale(scale);
 		this.allert.setScale(scale / 2);
 	}
 
-	public void checkCollision(List<Entity> entityBuffer, List<Hitbox> worldHitboxes) {
-		if (this.canCollide) {
-			this.newPositionX = this.model.getX();
-			this.newPositionY = this.model.getY();	
-		
-			List<Vector4f> entityBB = this.model.calculateBoundingBox(this.hitbox);
-			
-			float sizeX = Math.abs(entityBB.get(0).x - entityBB.get(2).x);
-			float sizeY = Math.abs(entityBB.get(0).y - entityBB.get(2).y);
-			
-			this.airborne = true;
-			this.stuck = false;	
-			
-			Collections.sort(worldHitboxes, new Comparator<Hitbox>() {
-				public int compare(Hitbox first, Hitbox second) {
-					
-					float dist1 = Math.abs(model.getX() - first.getCenterX());
-					float dist2 = Math.abs(model.getX() - second.getCenterX());
-					
-					return(dist1 == dist2 ? 0 : dist1 < dist2 ? -1 : 1);
-				}
-			});
-			
-			this.ableToSuperJump = false;
-			
-			for (int i = 0; i < worldHitboxes.size(); i++) {				
-				Vector2f objectBB0 = new Vector2f(worldHitboxes.get(i).getX0(), worldHitboxes.get(i).getY0());
-				Vector2f objectBB2 = new Vector2f(worldHitboxes.get(i).getX2(), worldHitboxes.get(i).getY2());
-				
-				if (entityBB.get(0).x > objectBB2.x && // LEFT
-					entityBB.get(2).x < objectBB0.x && // RIGHT
-					entityBB.get(2).y < objectBB0.y && // TOP
-					entityBB.get(0).y > objectBB2.y) { // BOTTOM
-
-					List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
-					
-					if (prevEntityBB.get(0).x < objectBB2.x) { // LEFT
-						this.newPositionX = objectBB2.x - (sizeX / 2) - 0.1f;
-						this.velocityX = 0;
-					} else if (prevEntityBB.get(2).x > objectBB0.x) { // RIGHT
-						this.newPositionX = objectBB0.x + (sizeX / 2) + 0.1f;
-						this.velocityX = 0;
-					} else if (prevEntityBB.get(2).y > objectBB0.y) { // TOP
-						if (worldHitboxes.get(i).getSpecialJump()) {
-							this.ableToSuperJump = true;
-						}
-						this.newPositionY = objectBB0.y + (sizeY / 2) + 0.1f;
-						this.velocityY = 0;
-						this.airborne = false;
-						this.refreshJump();
-					} else if (prevEntityBB.get(0).y < objectBB2.y) { // BOTTOM
-						this.newPositionY = objectBB2.y - (sizeY / 2) - 0.1f;
-						this.velocityY = 0;
-					}
-					
-					this.model.rollbackPosition(this.newPositionX, this.newPositionY);
-					
-					entityBB = this.model.calculateBoundingBox(this.hitbox);
-				}
-			}
-				
-			for (int i = 0; i < entityBuffer.size(); i++) {				
-				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
-					
-					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
-					
-					if (entityBB.get(0).x > objectBB.get(2).x && // LEFT
-						entityBB.get(2).x < objectBB.get(0).x && // RIGHT
-						entityBB.get(2).y < objectBB.get(0).y && // TOP
-						entityBB.get(0).y > objectBB.get(2).y) { // BOTTOM
-
-						if (entityBuffer.get(i) instanceof Collectible) {
-							Collectible collectible = (Collectible)entityBuffer.get(i);
-							
-							collectible.applyEffect(this);
-							
-							if (!(collectible instanceof Portal)) {
-								entityBuffer.remove(i);
-								i--;
-							}
-						}			
-						else {
-							List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
-							
-							if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
-								this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.5f;
-								this.velocityX = 0;
-								
-								if (entityBuffer.get(i) instanceof Enemy) {
-									Enemy enemy = (Enemy)entityBuffer.get(i);
-									
-									this.doDamage(enemy.getDamage());
-								}
-								
-							} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
-								this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.5f;
-								this.velocityX = 0;
-								if (entityBuffer.get(i) instanceof Enemy) {
-									Enemy enemy = (Enemy)entityBuffer.get(i);
-									
-									this.doDamage(enemy.getDamage());
-								}
-								
-							} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
-								if (entityBuffer.get(i) instanceof Enemy) {
-									if (entityBuffer.get(i) instanceof Boss) {
-										Boss boss = (Boss)entityBuffer.get(i);
-										boss.doDamage();
-									} else {
-										entityBuffer.remove(i);
-									}
-									this.unconditionalJump();
-								} else {
-									this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.5f;
-									this.velocityY = 0;
-									this.airborne = false;
-									this.refreshJump();
-								}
-								
-								
-							} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
-								this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.5f;
-								this.velocityY = 0;
-								
-								if (entityBuffer.get(i) instanceof Enemy) {
-									Enemy enemy = (Enemy)entityBuffer.get(i);
-									
-									this.doDamage(enemy.getDamage());
-								}
-							}
-							
-							this.model.rollbackPosition(this.newPositionX, this.newPositionY);
-							
-							entityBB = this.model.calculateBoundingBox(this.hitbox);
-						}
-					}
-				}
-			}
-		}
-	}
+//	public void checkCollision(List<Entity> entityBuffer, List<Hitbox> worldHitboxes) {
+//		if (this.canCollide) {
+//			this.newPositionX = this.model.getX();
+//			this.newPositionY = this.model.getY();	
+//		
+//			List<Vector4f> entityBB = this.model.calculateBoundingBox(this.hitbox);
+//			
+//			float sizeX = Math.abs(entityBB.get(0).x - entityBB.get(2).x);
+//			float sizeY = Math.abs(entityBB.get(0).y - entityBB.get(2).y);
+//			
+//			this.airborne = true;
+//			this.stuck = false;	
+//			
+//			Collections.sort(worldHitboxes, new Comparator<Hitbox>() {
+//				public int compare(Hitbox first, Hitbox second) {
+//					
+//					float dist1 = Math.abs(model.getX() - first.getCenterX());
+//					float dist2 = Math.abs(model.getX() - second.getCenterX());
+//					
+//					return(dist1 == dist2 ? 0 : dist1 < dist2 ? -1 : 1);
+//				}
+//			});
+//			
+//			this.ableToSuperJump = false;
+//			
+//			for (int i = 0; i < worldHitboxes.size(); i++) {				
+//				Vector2f objectBB0 = new Vector2f(worldHitboxes.get(i).getX0(), worldHitboxes.get(i).getY0());
+//				Vector2f objectBB2 = new Vector2f(worldHitboxes.get(i).getX2(), worldHitboxes.get(i).getY2());
+//				
+//				if (entityBB.get(0).x > objectBB2.x && // LEFT
+//					entityBB.get(2).x < objectBB0.x && // RIGHT
+//					entityBB.get(2).y < objectBB0.y && // TOP
+//					entityBB.get(0).y > objectBB2.y) { // BOTTOM
+//
+//					List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
+//					
+//					if (prevEntityBB.get(0).x < objectBB2.x) { // LEFT
+//						this.newPositionX = objectBB2.x - (sizeX / 2) - 0.1f;
+//						this.velocityX = 0;
+//					} else if (prevEntityBB.get(2).x > objectBB0.x) { // RIGHT
+//						this.newPositionX = objectBB0.x + (sizeX / 2) + 0.1f;
+//						this.velocityX = 0;
+//					} else if (prevEntityBB.get(2).y > objectBB0.y) { // TOP
+//						if (worldHitboxes.get(i).getSpecialJump()) {
+//							this.ableToSuperJump = true;
+//						}
+//						this.newPositionY = objectBB0.y + (sizeY / 2) + 0.1f;
+//						this.velocityY = 0;
+//						this.airborne = false;
+//						this.refreshJump();
+//					} else if (prevEntityBB.get(0).y < objectBB2.y) { // BOTTOM
+//						this.newPositionY = objectBB2.y - (sizeY / 2) - 0.1f;
+//						this.velocityY = 0;
+//					}
+//					
+//					this.model.rollbackPosition(this.newPositionX, this.newPositionY);
+//					
+//					entityBB = this.model.calculateBoundingBox(this.hitbox);
+//				}
+//			}
+//				
+//			for (int i = 0; i < entityBuffer.size(); i++) {				
+//				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
+//					
+//					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
+//					
+//					if (entityBB.get(0).x > objectBB.get(2).x && // LEFT
+//						entityBB.get(2).x < objectBB.get(0).x && // RIGHT
+//						entityBB.get(2).y < objectBB.get(0).y && // TOP
+//						entityBB.get(0).y > objectBB.get(2).y) { // BOTTOM
+//
+//						if (entityBuffer.get(i) instanceof Collectible) {
+//							Collectible collectible = (Collectible)entityBuffer.get(i);
+//							
+//							collectible.applyEffect(this);
+//							
+//							if (!(collectible instanceof Portal)) {
+//								entityBuffer.remove(i);
+//								i--;
+//							}
+//						}			
+//						else {
+//							List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
+//							
+//							if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
+//								this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.5f;
+//								this.velocityX = 0;
+//								
+//								if (entityBuffer.get(i) instanceof Enemy) {
+//									Enemy enemy = (Enemy)entityBuffer.get(i);
+//									
+//									this.doDamage(enemy.getDamage());
+//								}
+//								
+//							} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
+//								this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.5f;
+//								this.velocityX = 0;
+//								if (entityBuffer.get(i) instanceof Enemy) {
+//									Enemy enemy = (Enemy)entityBuffer.get(i);
+//									
+//									this.doDamage(enemy.getDamage());
+//								}
+//								
+//							} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
+//								if (entityBuffer.get(i) instanceof Enemy) {
+//									if (entityBuffer.get(i) instanceof Boss) {
+//										Boss boss = (Boss)entityBuffer.get(i);
+//										boss.doDamage();
+//									} else {
+//										entityBuffer.remove(i);
+//									}
+//									this.unconditionalJump();
+//								} else {
+//									this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.5f;
+//									this.velocityY = 0;
+//									this.airborne = false;
+//									this.refreshJump();
+//								}
+//								
+//								
+//							} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
+//								this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.5f;
+//								this.velocityY = 0;
+//								
+//								if (entityBuffer.get(i) instanceof Enemy) {
+//									Enemy enemy = (Enemy)entityBuffer.get(i);
+//									
+//									this.doDamage(enemy.getDamage());
+//								}
+//							}
+//							
+//							this.model.rollbackPosition(this.newPositionX, this.newPositionY);
+//							
+//							entityBB = this.model.calculateBoundingBox(this.hitbox);
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
 
 	public void calculateState() {
 		if (this.damaged) {
@@ -351,7 +351,7 @@ public class Player extends Entity{
 	}
 	
 	public boolean canJump() {
-		return((!this.airborne && !this.stuck) || additionalJumps != 0);
+		return(!this.airborne || additionalJumps != 0);
 	}
 	
 	public void jump() {

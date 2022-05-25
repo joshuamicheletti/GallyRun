@@ -157,6 +157,7 @@ public class Game {
 			
 			// calculate the new position of the entity (influenced by force, acceleration and speed)
 			current.calculatePosition();
+//			current.applyPosition();
 			
 			// check for collisions against hitboxes or other entities and update the position to resolve the collision
 			current.checkCollision(this.entityBuffer, this.worldHitboxes);
@@ -234,11 +235,8 @@ public class Game {
 		int mapX = -this.worldSizeX / 2 * this.engine.getTileSize();
 		int mapY = (-this.worldSizeY / 2 + 5) * this.engine.getTileSize();
 		
-		
 		// creating the entity objects
 		Player player = new Player();
-		Entity pengu = new Entity();
-		Entity blob = new Entity();
 		Enemy enemy = new Enemy(player);
 		Enemy enemy2 = new Enemy(player);
 		Enemy enemy3 = new Enemy(player);
@@ -246,117 +244,113 @@ public class Game {
 		
 		// giving them a name
 		player.setName("player");
-		pengu.setName("Heart Pengu");
-		blob.setName("blob");
 		enemy.setName("enemy");
 		enemy2.setName("enemy2");
 		enemy3.setName("enemy3");
 		boss.setName("boss");
 		
 		// setting the parameters of each object
-		player.model.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
+		player.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
 		player.model.setAnimationSpeed(10f);
-		player.model.setPosition(mapX + 1300, mapY + 1753);
+//		player.model.setPosition(mapX + 1300, mapY + 1753);
+		player.setPosition(mapX + 1300, mapY + 1753);
 //		player.setNewPosition(mapX + 1300, mapY + 1753);
 //		player.model.setPosition(mapX + 93 * this.engine.getTileSize(), mapY + 60 * this.engine.getTileSize());
 //		mapY + 1852
 		player.setScale(0.5f);
 		player.model.setBBScale(0.75f, 1f);
+		player.setBBWidth(player.getBBWidth() * 0.75f);
+		player.setBBHeight(player.getBBHeight() * 1f);
 		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 3);
 		player.setSleep(true);
-	
-		pengu.model.loadAnimationAndAdapt("./assets/textures/pengu2.png", 2, 1);
-		pengu.model.setAnimationSpeed(1f);
-		pengu.model.setPosition(-6700, 2500);
-		pengu.model.setPosition(-6700, 2500);
 		
-		enemy.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
+		enemy.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy.model.setAnimationSpeed(10f);
-		enemy.model.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
-		enemy.model.setScale(0.5f);
-		enemy.model.setBBScale(0.75f, 1f);
-		enemy.setBehaviour(1);
+		enemy.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
+		enemy.setScale(0.5f);
+		enemy.setBBWidth(player.getBBWidth() * 0.75f);
+		enemy.setBehaviour(0);
 		
-		enemy2.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
+		enemy2.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy2.model.setAnimationSpeed(10f);
-		enemy2.model.setPosition(mapX + 1700, mapY + 1160);
-		enemy2.model.setScale(0.5f);
-		enemy2.model.setBBScale(0.75f, 1f);
+		enemy2.setPosition(mapX + 59 * this.engine.getTileSize(), mapY + 2500);
+//		enemy2.setPosition(mapX + 1700, mapY + 1160);
+		enemy2.setScale(0.5f);
+		enemy2.setBBWidth(player.getBBWidth() * 0.75f);
 		enemy2.setBehaviour(0);
 		
-		enemy3.model.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
+		enemy3.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy3.model.setAnimationSpeed(10f);
-		enemy3.model.setPosition(mapX + 79 * this.engine.getTileSize(), mapY + 50 * this.engine.getTileSize());
-		enemy3.model.setScale(0.5f);
-		enemy3.model.setBBScale(0.75f, 1f);
+		enemy3.setPosition(mapX + 79 * this.engine.getTileSize(), mapY + 50 * this.engine.getTileSize());
+		enemy3.setScale(0.5f);
+		enemy3.setBBWidth(player.getBBWidth() * 0.75f);
 		enemy3.setSpeed(5);
 		enemy3.setBehaviour(1);
 		
-		boss.model.loadAnimationAndAdapt("./assets/textures/boss2.png", 2, 2);
+		boss.loadAnimationAndAdapt("./assets/textures/boss2.png", 2, 2);
 		boss.model.setAnimationSpeed(10f);
-		boss.model.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
-		boss.model.setScale(1.5f);
-		boss.model.setBBScale(0.75f, 1f);
+		boss.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
+		boss.setScale(1.5f);
+		boss.setBBWidth(player.getBBWidth() * 0.75f);
 		
 		
 		DoubleJump powerup = new DoubleJump();
-		powerup.model.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18 + 5) * this.engine.getTileSize());
+		powerup.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18 + 5) * this.engine.getTileSize());
 		
 		this.entityBuffer.add(player);
-//		this.entityBuffer.add(pengu);
 		this.entityBuffer.add(enemy);
 		this.entityBuffer.add(enemy2);
-		this.entityBuffer.add(enemy3);
+//		this.entityBuffer.add(enemy3);
 		this.entityBuffer.add(powerup);
 		this.entityBuffer.add(boss);
 		
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();
-			coin.model.setPosition((-this.worldSizeX / 2) * this.engine.getTileSize() + ((31 + (i % 2)) * this.engine.getTileSize()),
-								   (-this.worldSizeY / 2 + 5) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
+			coin.setPosition((-this.worldSizeX / 2)     * this.engine.getTileSize() + ((31 + (i % 2)) * this.engine.getTileSize()),
+							 (-this.worldSizeY / 2 + 5) * this.engine.getTileSize() + ((27 - (i / 2)) * this.engine.getTileSize()));
 			this.entityBuffer.add(coin);
 		}
 
 		Coin coin = new Coin();
-		coin.model.setPosition(mapX + 63 * this.engine.getTileSize(), mapY + 37 * this.engine.getTileSize());
+		coin.setPosition(mapX + 63 * this.engine.getTileSize(), mapY + 37 * this.engine.getTileSize());
 		this.entityBuffer.add(coin);
 		
 		Coin coin1 = new Coin();
-		coin1.model.setPosition(mapX + 63 * this.engine.getTileSize(), mapY + 45 * this.engine.getTileSize());
+		coin1.setPosition(mapX + 63 * this.engine.getTileSize(), mapY + 45 * this.engine.getTileSize());
 		this.entityBuffer.add(coin1);
 		
 		Coin coin2 = new Coin();
-		coin2.model.setPosition(mapX + 67 * this.engine.getTileSize(), mapY + 41 * this.engine.getTileSize());
+		coin2.setPosition(mapX + 67 * this.engine.getTileSize(), mapY + 41 * this.engine.getTileSize());
 		this.entityBuffer.add(coin2);
 		
 		Coin coin3 = new Coin();
-		coin3.model.setPosition(mapX + 93 * this.engine.getTileSize(), mapY + 55 * this.engine.getTileSize());
+		coin3.setPosition(mapX + 93 * this.engine.getTileSize(), mapY + 55 * this.engine.getTileSize());
 		this.entityBuffer.add(coin3);
 		
 		Coin coin4 = new Coin();
-		coin4.model.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 48 * this.engine.getTileSize());
+		coin4.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 48 * this.engine.getTileSize());
 		this.entityBuffer.add(coin4);
 		Coin coin5 = new Coin();
-		coin5.model.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 42 * this.engine.getTileSize());
+		coin5.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 42 * this.engine.getTileSize());
 		this.entityBuffer.add(coin5);
 		Coin coin6 = new Coin();
-		coin6.model.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 36 * this.engine.getTileSize());
+		coin6.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 36 * this.engine.getTileSize());
 		this.entityBuffer.add(coin6);
 		Coin coin7 = new Coin();
-		coin7.model.setPosition(mapX + 90 * this.engine.getTileSize(), mapY + 30 * this.engine.getTileSize());
+		coin7.setPosition(mapX + 90 * this.engine.getTileSize(), mapY + 30 * this.engine.getTileSize());
 		this.entityBuffer.add(coin7);
 		Coin coin8 = new Coin();
-		coin8.model.setPosition(mapX + 89 * this.engine.getTileSize(), mapY + 24 * this.engine.getTileSize());
+		coin8.setPosition(mapX + 89 * this.engine.getTileSize(), mapY + 24 * this.engine.getTileSize());
 		this.entityBuffer.add(coin8);
 		Coin coin9 = new Coin();
-		coin9.model.setPosition(mapX + 88 * this.engine.getTileSize(), mapY + 18 * this.engine.getTileSize());
+		coin9.setPosition(mapX + 88 * this.engine.getTileSize(), mapY + 18 * this.engine.getTileSize());
 		this.entityBuffer.add(coin9);
 		Coin coin10 = new Coin();
-		coin10.model.setPosition(mapX + 86 * this.engine.getTileSize(), mapY + 14 * this.engine.getTileSize());
+		coin10.setPosition(mapX + 86 * this.engine.getTileSize(), mapY + 14 * this.engine.getTileSize());
 		this.entityBuffer.add(coin10);
 		
 		Coin coin11 = new Coin();
-		coin11.model.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 15 * this.engine.getTileSize());
+		coin11.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 15 * this.engine.getTileSize());
 		this.entityBuffer.add(coin11);
 		
 		// loading them into the entityBuffer		
@@ -367,10 +361,6 @@ public class Game {
 		this.mixer.uploadSong("./assets/sounds/bossTheme2.ogg", true);
 		
 		this.mixer.playSong(0);
-		
-//		Sound sound = new Sound("./assets/sounds/normalTheme.ogg", true);
-//		
-//		sound.play();
 	}
 	
 	// method for loading the starting tiles that compose the world
@@ -398,10 +388,6 @@ public class Game {
 		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str");
 		treeBackground.applyStructure(mapX + 3, mapY + 32, this.background);	
 		
-//		Structure backgroundTree = new Structure();
-//		backgroundTree.loadStructure("./assets/world/adventure pack/backgroundTree.str");
-//		backgroundTree.applyStructure(mapX + 58, mapY + 30, this.background);
-		
 		Structure platformTree = new Structure();
 		platformTree.loadStructureWithHitbox("./assets/world/adventure pack/platformTree.str", this.engine.getTileSize());
 		platformTree.applyStructureWithHitbox(mapX + 54, mapY + 36, this.world, this.worldHitboxes);
@@ -414,18 +400,6 @@ public class Game {
 		Structure map = new Structure();
 		map.loadStructureWithHitbox("./assets/world/adventure pack/map.str", this.engine.getTileSize());
 		map.applyStructureWithHitbox(mapX, mapY, this.world, this.worldHitboxes);
-		
-		
-		// world limit
-//		for (int i = 0; i < this.worldSizeX; i++) {
-//			for (int j = 0; j < this.worldSizeY; j++) {
-//				if ((i == 0 || i == this.worldSizeX - 1) ||
-//					(j == 0 || j == this.worldSizeY - 1)) {
-//					world[i][j] = 181;
-//				}
-//			}
-//		}
-		
 	}
 	
 	
@@ -441,26 +415,6 @@ public class Game {
 				glfwSetWindowShouldClose(this.window, true);
 			}
 		}
-		
-//		if (delta >= 5) {
-//			System.out.println("CLOSE");
-//			glfwSetWindowShouldClose(this.window, true);
-//		} else if (delta >= 4) {
-//			System.out.println("1");
-//			this.engine.ui.setWinTimer(1);
-//		} else if (delta >= 3) {
-//			System.out.println("2");
-//			this.engine.ui.setWinTimer(2);
-//		} else if (delta >= 2) {
-//			System.out.println("3");
-//			this.engine.ui.setWinTimer(3);
-//		} else if (delta >= 1) {
-//			System.out.println("4");
-//			this.engine.ui.setWinTimer(4);
-//		} else if (delta >= 0) {
-//			System.out.println("5");
-//			this.engine.ui.setWinTimer(5);
-//		}
 	}
 	
 	// method for finding an entity in the entityBuffer by name
