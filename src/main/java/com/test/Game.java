@@ -132,44 +132,58 @@ public class Game {
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
 			Entity current = this.entityBuffer.get(i);
 			
-			// update the AI of the enemy
-			if (current instanceof Enemy) {
-				Enemy currentEnemy = (Enemy)current;
-				currentEnemy.control();
-			}
-			
-			// update the timers on the player
-			if (current instanceof Player) {
-				Player player = (Player)current;
-				
-//				System.out.println("x: " + player.model.getX() + ", y: " + player.model.getY());
-				
-				player.calculateState();
-			}
-			
-			if (current instanceof Portal) {
-				Portal portal = (Portal)current;
-				
-				if (portal.getWin() && this.winTimer == 0) {
-					this.winTimer = System.nanoTime() / 1000000000L;
+			if (current.isToRemove()) {
+				entityBuffer.remove(i);
+				i--;
+			} else {
+				// update the AI of the enemy
+				if (current instanceof Enemy) {
+					Enemy currentEnemy = (Enemy)current;
+					currentEnemy.control();
 				}
+				
+				// update the timers on the player
+				if (current instanceof Player) {
+					Player player = (Player)current;
+//					System.out.println("DoubleJump: " + player.canDoubleJump());
+//					System.out.println("x: " + player.model.getX() + ", y: " + player.model.getY());
+					
+					player.calculateState();
+				}
+				
+				if (current instanceof Portal) {
+					Portal portal = (Portal)current;
+					
+					if (portal.getWin() && this.winTimer == 0) {
+						this.winTimer = System.nanoTime() / 1000000000L;
+					}
+				}
+				
+				// calculate the new position of the entity (influenced by force, acceleration and speed)
+				current.calculatePosition();
+//				current.applyPosition();
+				
+				// check for collisions against hitboxes or other entities and update the position to resolve the collision
+				current.checkCollision(this.entityBuffer, this.worldHitboxes);
+				
+				// if we're updating the position of the player
+				if (current instanceof Player) {
+					// move the camera according to the new position of the player
+					this.engine.camera.setPosition(new Vector3f(-current.model.getX(), -current.model.getY(), 0));
+				}
+				
+				// update the animation of the entity
+				current.updateAnimation();
+				
+//				if (current instanceof Collectible) {
+//					Collectible collectible = (Collectible)current;
+//									
+//					if (collectible.isCollected()) {
+//						this.entityBuffer.remove(i);
+//						i--;
+//					}
+//				}
 			}
-			
-			// calculate the new position of the entity (influenced by force, acceleration and speed)
-			current.calculatePosition();
-//			current.applyPosition();
-			
-			// check for collisions against hitboxes or other entities and update the position to resolve the collision
-			current.checkCollision(this.entityBuffer, this.worldHitboxes);
-			
-			// if we're updating the position of the player
-			if (current instanceof Player) {
-				// move the camera according to the new position of the player
-				this.engine.camera.setPosition(new Vector3f(-current.model.getX(), -current.model.getY(), 0));
-			}
-			
-			// update the animation of the entity
-			current.updateAnimation();
 		}
 	}
 	
@@ -269,12 +283,12 @@ public class Game {
 		enemy.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
 		enemy.setScale(0.5f);
 		enemy.setBBWidth(player.getBBWidth() * 0.75f);
-		enemy.setBehaviour(0);
+		enemy.setBehaviour(1);
 		
 		enemy2.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy2.model.setAnimationSpeed(10f);
-		enemy2.setPosition(mapX + 59 * this.engine.getTileSize(), mapY + 2500);
-//		enemy2.setPosition(mapX + 1700, mapY + 1160);
+//		enemy2.setPosition(mapX + 59 * this.engine.getTileSize(), mapY + 2500);
+		enemy2.setPosition(mapX + 1700, mapY + 1160);
 		enemy2.setScale(0.5f);
 		enemy2.setBBWidth(player.getBBWidth() * 0.75f);
 		enemy2.setBehaviour(0);

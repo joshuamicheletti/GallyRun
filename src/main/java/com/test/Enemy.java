@@ -1,12 +1,5 @@
 package com.test;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import org.joml.Vector2f;
-import org.joml.Vector4f;
-
 public class Enemy extends Entity {
 	
 	protected boolean movingRight;
@@ -21,6 +14,7 @@ public class Enemy extends Entity {
 		this.damage = 25;
 		this.behaviour = 0;
 		this.speed = 10f;
+		this.applyForce(0.1f, 0.1f);
 	}
 	
 	public void control() {
@@ -197,16 +191,29 @@ public class Enemy extends Entity {
 		this.speed = speed;
 	}
 	
-	public void hitRight(PhysicsBody p, Hitbox h) {
-		System.out.println("ENEMY HIT RIGHT");
+	public void hitRight(Object target) {
 		if (this.movingRight == false) {
 			this.movingRight = true;
 		}
+		
+		if (target instanceof Player) {
+			Player player = (Player)target;
+			player.takeDamage(this.damage);
+		}
 	}
 	
-	public void hitLeft(PhysicsBody p, Hitbox h) {
+	public void hitLeft(Object target) {
 		if (this.movingRight == true) {
 			this.movingRight = false;
 		}
+		
+		if (target instanceof Player) {
+			Player player = (Player)target;
+			player.takeDamage(this.damage);
+		}
+	}
+	
+	public void hit() {
+		this.setToRemove();
 	}
 }

@@ -117,34 +117,31 @@ public class PhysicsBody {
 				if (entityBBPoint0X > objectBB2.x && // LEFT
 					entityBBPoint2X < objectBB0.x && // RIGHT
 					entityBBPoint2Y < objectBB0.y && // TOP
-					entityBBPoint0Y > objectBB2.y) { // BOTTOM					
+					entityBBPoint0Y > objectBB2.y) { // BOTTOM
 					
 					// calculate the bounding box of the entity in the frame before the collision
 					float prevEntityBBPoint0X = this.previousPositionX + this.bbW / 2;
-					float prevEntityBBPoint0Y = this.previousPositionY - this.bbH / 2;
+					float prevEntityBBPoint0Y = this.previousPositionY + this.bbH / 2;
 					float prevEntityBBPoint2X = this.previousPositionX - this.bbW / 2;
-					float prevEntityBBPoint2Y = this.previousPositionY + this.bbH / 2;
+					float prevEntityBBPoint2Y = this.previousPositionY - this.bbH / 2;
 					// this is necessary to be able to tell from what direction the entity hit the hitbox from
 					
 					if (prevEntityBBPoint0X < objectBB2.x) { // LEFT
 						this.newPositionX = objectBB2.x - (this.bbW / 2) - 0.1f; // place the entity to the left of the hitbox
-						this.velocityX = 0;									  // negate the horizontal velocity
-						this.hitLeft(this, worldHitboxes.get(i));
-						
+						this.velocityX = 0;									     // negate the horizontal velocity
+						this.hitLeft(worldHitboxes.get(i));
 					} else if (prevEntityBBPoint2X > objectBB0.x) { // RIGHT
 						this.newPositionX = objectBB0.x + (this.bbW / 2) + 0.1f; // place the entity to the right of the hitbox
-						this.velocityX = 0;									  // negate the horizontal velocity
-						this.hitRight(this, worldHitboxes.get(i));
+						this.velocityX = 0;									     // negate the horizontal velocity
+						this.hitRight(worldHitboxes.get(i));
 					} else if (prevEntityBBPoint2Y > objectBB0.y) { // TOP
 						this.newPositionY = objectBB0.y + (this.bbH / 2) + 0.1f; // place the entity to the top of the hitbox
-						this.velocityY = 0;									  // negate the vertical velocity
-						
-						this.hitTop(this, worldHitboxes.get(i));
-
+						this.velocityY = 0;									     // negate the vertical velocity
+						this.hitTop(worldHitboxes.get(i));
 					} else if (prevEntityBBPoint0Y < objectBB2.y) { // BOTTOM
 						this.newPositionY = objectBB2.y - (this.bbH / 2) - 0.1f; // place the entity to the bottom of the hitbox
-						this.velocityY = 0;									  // negate the vertical velocity
-						this.hitBottom(this, worldHitboxes.get(i));
+						this.velocityY = 0;									     // negate the vertical velocity
+						this.hitBottom(worldHitboxes.get(i));
 					}
 					
 					// rollback the position of the entity to the new calculated position (free from collisions)
@@ -160,65 +157,94 @@ public class PhysicsBody {
 				}
 			}
 				
-//			for (int i = 0; i < entityBuffer.size(); i++) {				
-//				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
-//					
-//					List<Vector4f> objectBB = entityBuffer.get(i).model.calculateBoundingBox(false);
-//					
-//					if (entityBB.get(0).x > objectBB.get(2).x && // LEFT
-//						entityBB.get(2).x < objectBB.get(0).x && // RIGHT
-//						entityBB.get(2).y < objectBB.get(0).y && // TOP
-//						entityBB.get(0).y > objectBB.get(2).y) { // BOTTOM
-//
-//						List<Vector4f> prevEntityBB = this.model.calculatePrevBoundingBox(this.hitbox);
-//						
-//						if (prevEntityBB.get(0).x < objectBB.get(2).x) { // LEFT
-//							this.newPositionX = objectBB.get(2).x - (sizeX / 2) - 0.1f;
-//							this.velocityX = 0;
-//						} else if (prevEntityBB.get(2).x > objectBB.get(0).x) { // RIGHT
-//							this.newPositionX = objectBB.get(0).x + (sizeX / 2) + 0.1f;
-//							this.velocityX = 0;
-//						} else if (prevEntityBB.get(2).y > objectBB.get(0).y) { // TOP
-//							this.newPositionY = objectBB.get(0).y + (sizeY / 2) + 0.1f;
-//							this.velocityY = 0;
-//							this.airborne = false;
-//						} else if (prevEntityBB.get(0).y < objectBB.get(2).y) { // BOTTOM
-//							this.newPositionY = objectBB.get(2).y - (sizeY / 2) - 0.1f;
-//							this.velocityY = 0;
-//						}
-//						
-//						this.model.rollbackPosition(this.newPositionX, this.newPositionY);
-//						
-//						entityBB = this.model.calculateBoundingBox(this.hitbox);
-//					}
-//				}
+			for (int i = 0; i < entityBuffer.size(); i++) {				
+				if (entityBuffer.get(i) != this && entityBuffer.get(i).canCollide) {
+					Vector2f objectBB0 = new Vector2f(entityBuffer.get(i).getX() + entityBuffer.get(i).getBBWidth() / 2,
+													  entityBuffer.get(i).getY() + entityBuffer.get(i).getBBHeight() / 2);
+					
+					Vector2f objectBB2 = new Vector2f(entityBuffer.get(i).getX() - entityBuffer.get(i).getBBWidth() / 2,
+							  						  entityBuffer.get(i).getY() - entityBuffer.get(i).getBBHeight() / 2);
+					
+					if (entityBBPoint0X > objectBB2.x && // LEFT
+						entityBBPoint2X < objectBB0.x && // RIGHT
+						entityBBPoint2Y < objectBB0.y && // TOP
+						entityBBPoint0Y > objectBB2.y) { // BOTTOM
+
+						if (this.collision(entityBuffer.get(i))) {
+							float prevEntityBBPoint0X = this.previousPositionX + this.bbW / 2;
+							float prevEntityBBPoint0Y = this.previousPositionY + this.bbH / 2;
+							float prevEntityBBPoint2X = this.previousPositionX - this.bbW / 2;
+							float prevEntityBBPoint2Y = this.previousPositionY - this.bbH / 2;
+							
+							if (prevEntityBBPoint0X < objectBB2.x) { // LEFT
+								this.newPositionX = objectBB2.x - (this.bbW / 2) - 0.1f;
+								this.velocityX = 0;
+								this.hitLeft(entityBuffer.get(i));
+							} else if (prevEntityBBPoint2X > objectBB0.x) { // RIGHT
+								this.newPositionX = objectBB0.x + (this.bbW / 2) + 0.1f;
+								this.velocityX = 0;
+								this.hitRight(entityBuffer.get(i));
+							} else if (prevEntityBBPoint2Y > objectBB0.y) { // TOP
+								this.newPositionY = objectBB0.y + (this.bbH / 2) + 0.1f;
+								this.velocityY = 0;
+								this.hitTop(entityBuffer.get(i));
+							} else if (prevEntityBBPoint0Y < objectBB2.y) { // BOTTOM
+								this.newPositionY = objectBB2.y - (this.bbH / 2) - 0.1f;
+								this.velocityY = 0;
+								this.hitBottom(entityBuffer.get(i));
+							}
+							
+							this.positionX = this.newPositionX;
+							this.positionY = this.newPositionY;
+							
+							this.previousPositionX = this.newPositionX;
+							this.previousPositionY = this.newPositionY;
+							
+							entityBBPoint0X = this.positionX + this.bbW / 2;
+							entityBBPoint0Y = this.positionY + this.bbH / 2;
+							entityBBPoint2X = this.positionX - this.bbW / 2;
+							entityBBPoint2Y = this.positionY - this.bbH / 2;
+						}	
+					}
+				}
 			}
 		}
+	}
 	
 	public void setForce(float x, float y) {
 		this.forceX = x;
 		this.forceY = y;
+		
+		this.updateDirection();
 	}
 	
 	public void setForcePolar(float r, float teta) {
 		this.forceX = r * (float)Math.cos(teta);
 		this.forceY = r * (float)Math.sin(teta);
+		
+		this.updateDirection();
 	}
 	
 	public void applyForce(float x, float y) {
 		this.forceX += x;
 		this.forceY += y;
 		
-		if (this.forceX > 0) {
-			this.facingRight = true;
-		} else if (this.forceX < 0) {
-			this.facingRight = false;
-		}
+		this.updateDirection();
 	}
 	
 	public void applyForcePolar(float r, float teta) {
 		this.forceX += r * (float)Math.cos(teta);
 		this.forceY += r * (float)Math.sin(teta);
+		
+		this.updateDirection();
+	}
+	
+	private void updateDirection() {
+		if (this.forceX > 0) {
+			this.facingRight = true;
+		} else if (this.forceX < 0) {
+			this.facingRight = false;
+		}
 	}
 	
 	public void calculatePosition() {
@@ -250,17 +276,22 @@ public class PhysicsBody {
 		this.gravity = gravity;
 	}
 	
-	public void hitTop(PhysicsBody current, Hitbox target) {
+	public void hitTop(Object target) {
 		System.out.println("Collision from top");
 	}
-	public void hitBottom(PhysicsBody current, Hitbox target) {
+	public void hitBottom(Object target) {
 		System.out.println("Collision from bottom");
 	}
-	public void hitLeft(PhysicsBody current, Hitbox target) {
+	public void hitLeft(Object target) {
 		System.out.println("Collision from left");
 	}
-	public void hitRight(PhysicsBody current, Hitbox target) {
+	public void hitRight(Object target) {
 		System.out.println("Collision from right");
+	}
+	
+	public boolean collision(Object target) {
+		System.out.println("Collided with " + target);
+		return(true);
 	}
 	
 	public void setBBWidth(float width) {
@@ -274,5 +305,12 @@ public class PhysicsBody {
 	}
 	public float getBBHeight() {
 		return(this.bbH);
+	}
+	
+	public float getX() {
+		return(this.positionX);
+	}
+	public float getY() {
+		return(this.positionY);
 	}
 }

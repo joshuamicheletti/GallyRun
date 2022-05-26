@@ -291,6 +291,41 @@ public class Player extends Entity{
 //		}
 //	}
 
+	public boolean collision(Object target) {
+		if (target instanceof Collectible) {
+			Collectible collectible = (Collectible)target;
+			collectible.applyEffect(this);
+			return(false);
+		}
+		
+		return(true);
+	}
+	
+	public void hitTop(Object target) {
+		if (target instanceof Enemy) {
+			Enemy enemy = (Enemy)target;
+			enemy.hit();
+			this.unconditionalJump();
+		} else {
+			super.hitTop(target);
+			this.refreshJump();
+		}
+	}
+	
+	public void hitLeft(Object target) {
+		if (target instanceof Enemy) {
+			Enemy enemy = (Enemy)target;
+			this.takeDamage(enemy.getDamage());
+		}
+	}
+	
+	public void hitRight(Object target) {
+		if (target instanceof Enemy) {
+			Enemy enemy = (Enemy)target;
+			this.takeDamage(enemy.getDamage());
+		}
+	}
+	
 	public void calculateState() {
 		if (this.damaged) {
 			double currentTime = System.nanoTime() / (double)1000000000L;
@@ -313,7 +348,7 @@ public class Player extends Entity{
 		return(this.hp);
 	}
 	
-	public void doDamage(int damage) {
+	public void takeDamage(int damage) {
 		if (!this.damaged) {
 			this.hp -= damage;
 			this.damaged = true;

@@ -113,5 +113,6 @@ public class Collectible extends Entity {
 	
 	public void applyEffect(Player player) {
 		System.out.println("Apply an effect to the player");
+		this.setToRemove();
 	}
 }

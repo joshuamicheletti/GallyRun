@@ -165,13 +165,6 @@ public class Controller {
 			this.player.setCrouching(false);
 		}
 		
-		// check if the player should be facing right or left
-		if (A) {
-			this.player.facingRight(false);
-		} else if (D) {
-			this.player.facingRight(true);
-		}
-		
 		// apply the force to the player
 		this.player.applyForcePolar(distance, direction);
 		

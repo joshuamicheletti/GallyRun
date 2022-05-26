@@ -14,11 +14,11 @@ public class Entity extends PhysicsBody {
 	// status of the sprite
 	// airborne (not touching the ground)
 	protected boolean airborne;
-	// facing right (or left)
-	protected boolean facingRight;
 	
 	// flag to check when the entity can do a super jump
 	protected boolean ableToSuperJump;
+	
+	protected boolean toRemove;
 	
 	// Constructor
 	public Entity() {
@@ -28,10 +28,10 @@ public class Entity extends PhysicsBody {
 		
 		// set the state flags
 		this.airborne = false;
-		
-		this.facingRight = true;
-		
+
 		this.ableToSuperJump = false;
+		
+		this.toRemove = false;
 	}
 	
 	// setters and getters for the entity name
@@ -43,12 +43,23 @@ public class Entity extends PhysicsBody {
 		return(this.name);
 	}
 	
-	public void hitTop(PhysicsBody p, Hitbox h) {
-		if (h.getSpecialJump()) {		  // if the hitbox enables a super jump, mark it as available		  
-			this.ableToSuperJump = true;
+	public void hitTop(Object target) {
+		if (target instanceof Hitbox) {
+			Hitbox h = (Hitbox)target;
+			
+			if (h.getSpecialJump()) {        // if the hitbox enables a super jump, mark it as available
+				this.ableToSuperJump = true;
+			}
 		}
 		
 		this.airborne = false;
+	}
+	
+	public boolean collision(Object target) {
+		if (target instanceof Collectible) {
+			return(false);
+		}
+		return(true);
 	}
 	
 	public void checkCollision(List<Entity> entityBuffer, List<Hitbox> worldHitboxes) {
@@ -142,5 +153,13 @@ public class Entity extends PhysicsBody {
 		
 		this.bbW *= scale;
 		this.bbH *= scale;
+	}
+	
+	public boolean isToRemove() {
+		return(this.toRemove);
+	}
+	
+	public void setToRemove() {
+		this.toRemove = true;
 	}
 }

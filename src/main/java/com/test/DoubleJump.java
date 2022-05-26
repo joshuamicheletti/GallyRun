@@ -13,5 +13,6 @@ public class DoubleJump extends Collectible {
 	public void applyEffect(Player player) {
 		player.enableDoubleJump();
 		this.sfx.play();
+		this.setToRemove();
 	}
 }

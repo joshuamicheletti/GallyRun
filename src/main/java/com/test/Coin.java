@@ -14,5 +14,6 @@ public class Coin extends Collectible {
 	public void applyEffect(Player player) {
 		player.addCoin();
 		this.sfx.play();
+		this.setToRemove();
 	}
 }

@@ -24,7 +24,7 @@ public class Boss extends Enemy {
 		this.damage = 50;
 	}
 	
-	public void doDamage() {
+	public void hit() {
 		if (!this.damaged) {
 			this.health--;
 			this.model.setOpacity(0.7f);
