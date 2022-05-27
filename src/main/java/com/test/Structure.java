@@ -191,10 +191,20 @@ public class Structure {
 							starting = i;
 						}
 						
-						hitbox = new Hitbox(size * (consecutive + starting) - size / 2,
-											size * (rows - currentRow) - size / 2,
-											size * starting - size / 2,
-											size * (rows - currentRow - 1) - size / 2);
+						hitbox = new Hitbox();
+						
+						float width = (size * (consecutive + starting) - size / 2) -
+									  (size * starting - size / 2);
+						
+						float height = (size * (rows - currentRow) - size / 2) -
+									   (size * (rows - currentRow - 1) - size / 2);
+						
+						float positionX = (size * starting - size / 2) + width / 2;
+						float positionY = (size * (rows - currentRow - 1) - size / 2) + height / 2;
+						
+						hitbox.setPosition(positionX, positionY);
+						hitbox.setBBHeight(height);
+						hitbox.setBBWidth(width);
 						
 						if (this.effect[i][(rows - 1) - currentRow] == 'J') {
 							hitbox.setSpecialJump(true);
@@ -249,10 +259,13 @@ public class Structure {
 		
 		for (int i = 0; i < this.hitboxes.size(); i++) {
 			Hitbox current = this.hitboxes.get(i);
-			current.setX0(current.getX0() + (this.tileSize * x));
-			current.setY0(current.getY0() + (this.tileSize * y));
-			current.setX2(current.getX2() + (this.tileSize * x));
-			current.setY2(current.getY2() + (this.tileSize * y));
+//			current.setX0(current.getX0() + (this.tileSize * x));
+//			current.setY0(current.getY0() + (this.tileSize * y));
+//			current.setX2(current.getX2() + (this.tileSize * x));
+//			current.setY2(current.getY2() + (this.tileSize * y));
+			
+			current.setPosition(current.getX() + (this.tileSize * x), current.getY() + (this.tileSize * y));
+			
 			worldHitboxes.add(current);
 		}
 	}

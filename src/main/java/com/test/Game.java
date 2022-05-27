@@ -1,6 +1,7 @@
 package com.test;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.joml.Vector3f;
@@ -98,11 +99,6 @@ public class Game {
 				this.updateEntities();
 				// allow the renderer to render on the window (this allows to lock the framerate to the tick rate, but not vice versa
 				this.engine.enableRender();
-				
-				
-				if (this.mixer.playingSong() == 1) {
-					System.out.println("Winning song!");
-				}
 			}
 			
 			// if the engine can render to screen (once every 1/60s)
@@ -161,10 +157,10 @@ public class Game {
 				
 				// calculate the new position of the entity (influenced by force, acceleration and speed)
 				current.calculatePosition();
-//				current.applyPosition();
 				
 				// check for collisions against hitboxes or other entities and update the position to resolve the collision
-				current.checkCollision(this.entityBuffer, this.worldHitboxes);
+				current.checkCollision(new LinkedList<IPhysicsBody>(this.entityBuffer), false);
+				current.checkCollision(new LinkedList<IPhysicsBody>(this.worldHitboxes), true);
 				
 				// if we're updating the position of the player
 				if (current instanceof Player) {
@@ -282,7 +278,7 @@ public class Game {
 		enemy.model.setAnimationSpeed(10f);
 		enemy.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
 		enemy.setScale(0.5f);
-		enemy.setBBWidth(player.getBBWidth() * 0.75f);
+		enemy.setBBWidth(enemy.getBBWidth() * 0.75f);
 		enemy.setBehaviour(1);
 		
 		enemy2.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
@@ -290,14 +286,14 @@ public class Game {
 //		enemy2.setPosition(mapX + 59 * this.engine.getTileSize(), mapY + 2500);
 		enemy2.setPosition(mapX + 1700, mapY + 1160);
 		enemy2.setScale(0.5f);
-		enemy2.setBBWidth(player.getBBWidth() * 0.75f);
+		enemy2.setBBWidth(enemy2.getBBWidth() * 0.75f);
 		enemy2.setBehaviour(0);
 		
 		enemy3.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
 		enemy3.model.setAnimationSpeed(10f);
 		enemy3.setPosition(mapX + 79 * this.engine.getTileSize(), mapY + 50 * this.engine.getTileSize());
 		enemy3.setScale(0.5f);
-		enemy3.setBBWidth(player.getBBWidth() * 0.75f);
+		enemy3.setBBWidth(enemy3.getBBWidth() * 0.75f);
 		enemy3.setSpeed(5);
 		enemy3.setBehaviour(1);
 		
@@ -305,7 +301,7 @@ public class Game {
 		boss.model.setAnimationSpeed(10f);
 		boss.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
 		boss.setScale(1.5f);
-		boss.setBBWidth(player.getBBWidth() * 0.75f);
+		boss.setBBWidth(boss.getBBWidth() * 0.75f);
 		
 		
 		DoubleJump powerup = new DoubleJump();
@@ -314,9 +310,14 @@ public class Game {
 		this.entityBuffer.add(player);
 		this.entityBuffer.add(enemy);
 		this.entityBuffer.add(enemy2);
-//		this.entityBuffer.add(enemy3);
+		this.entityBuffer.add(enemy3);
 		this.entityBuffer.add(powerup);
 		this.entityBuffer.add(boss);
+		
+		Collectible portal = new Portal();
+		
+		portal.setPosition(mapX + 1300, mapY + 1753);
+		this.entityBuffer.add(portal);
 		
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();
