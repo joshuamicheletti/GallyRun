@@ -186,7 +186,7 @@ public class Controller {
 				// enable idling
 				this.player.setIdle(true);
 				// if 9s passed
-				if (delta >= 9.0) {
+				if (delta >= 8.5) {
 					// disable idling
 					this.player.setIdle(false);
 					// restart the timer
@@ -199,7 +199,7 @@ public class Controller {
 				// enable the state of going to sleep
 				this.player.setGoingToSleep(true);
 				// if 32s passed without player inputs
-				if (deltaSleep >= 32.0) {
+				if (deltaSleep >= 31.8) {
 					// enable sleeping
 					this.player.setSleep(true);
 				}

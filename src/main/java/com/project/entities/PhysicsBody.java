@@ -137,20 +137,20 @@ public abstract class PhysicsBody implements IPhysicsBody {
 						// this is necessary to be able to tell from what direction the entity hit the hitbox from
 						
 						if (prevEntityBBPoint0X < objectBB2X) { // LEFT
-							this.newPositionX = objectBB2X - (this.bbW / 2) - 0.1f; // place the entity to the left of the hitbox
+							this.newPositionX = objectBB2X - (this.bbW / 2) - 0.5f; // place the entity to the left of the hitbox
 							this.velocityX = 0;									     // negate the horizontal velocity
 							this.hitLeft(bodies.get(i));
 						} else if (prevEntityBBPoint2X > objectBB0X) { // RIGHT
-							this.newPositionX = objectBB0X + (this.bbW / 2) + 0.1f; // place the entity to the right of the hitbox
+							this.newPositionX = objectBB0X + (this.bbW / 2) + 0.5f; // place the entity to the right of the hitbox
 							this.velocityX = 0;									     // negate the horizontal velocity
 							this.hitRight(bodies.get(i));
 						} else if (prevEntityBBPoint2Y > objectBB0Y) { // TOP
-							this.newPositionY = objectBB0Y + (this.bbH / 2) + 0.1f; // place the entity to the top of the hitbox
+							this.newPositionY = objectBB0Y + (this.bbH / 2) + 0.5f; // place the entity to the top of the hitbox
 							this.velocityY = 0;									     // negate the vertical velocity
 							this.airborne = false;
 							this.hitTop(bodies.get(i));
 						} else if (prevEntityBBPoint0Y < objectBB2Y) { // BOTTOM
-							this.newPositionY = objectBB2Y - (this.bbH / 2) - 0.1f; // place the entity to the bottom of the hitbox
+							this.newPositionY = objectBB2Y - (this.bbH / 2) - 0.5f; // place the entity to the bottom of the hitbox
 							this.velocityY = 0;									     // negate the vertical velocity
 							this.hitBottom(bodies.get(i));
 						}

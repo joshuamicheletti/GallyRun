@@ -148,13 +148,14 @@ public class Engine implements IEngine {
 		// ----------------- SKYBOX --------------------
 		
 		// store the current camera position
-		Vector3f cameraPosition = camera.getPosition();
+		float cameraPositionX = camera.getX();
+		float cameraPositionY = camera.getY();
 		// place the camera at the center
-		camera.setPosition(new Vector3f(0, 0, 0));
+		camera.setPosition(0, 0);
 		// render the skybox
 		this.sky.render(camera, false);
 		// restore the previous camera position
-		camera.setPosition(cameraPosition);
+		camera.setPosition(cameraPositionX, cameraPositionY);
 		// this process allows the sky to remain at the center of the camera, no matter how it moves
 		
 		
@@ -218,10 +219,10 @@ public class Engine implements IEngine {
 					int positionY = j * this.tileSize - (this.tileSize * (world[0].length / 2));
 				
 					// check if the current tile is visible by the camera
-					if (positionX - this.tileSize / 2 >= -this.camera.getPosition().x + this.w / 2 ||
-						positionX + this.tileSize / 2 <= -this.camera.getPosition().x - this.w / 2 ||
-						positionY - this.tileSize / 2 >= -this.camera.getPosition().y + this.h / 2 ||
-						positionY + this.tileSize / 2 <= -this.camera.getPosition().y - this.h / 2) {
+					if (positionX - this.tileSize / 2 >= -this.camera.getX() + this.w / 2 ||
+						positionX + this.tileSize / 2 <= -this.camera.getX() - this.w / 2 ||
+						positionY - this.tileSize / 2 >= -this.camera.getY() + this.h / 2 ||
+						positionY + this.tileSize / 2 <= -this.camera.getY() - this.h / 2) {
 					}
 					// render only if the tile is within the camera frostum
 					else {

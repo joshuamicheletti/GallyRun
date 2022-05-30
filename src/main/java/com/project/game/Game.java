@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.openal.AL;
@@ -165,7 +164,7 @@ public class Game {
 				// if we're updating the position of the player
 				if (current instanceof Player) {
 					// move the camera according to the new position of the player
-					this.engine.camera.setPosition(new Vector3f(-current.model.getX(), -current.model.getY(), 0));
+					this.engine.camera.setPosition(-current.model.getX(), -current.model.getY());
 				}
 				
 				// update the animation of the entity
@@ -289,7 +288,6 @@ public class Game {
 		boss.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
 		boss.setScale(1.5f);
 		boss.setBBWidth(boss.getBBWidth() * 0.75f);
-		
 		
 		DoubleJump powerup = new DoubleJump();
 		powerup.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18 + 5) * this.engine.getTileSize());

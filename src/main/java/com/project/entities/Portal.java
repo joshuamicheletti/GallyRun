@@ -17,7 +17,6 @@ public class Portal extends Collectible {
 	
 	public void applyEffect(Player player) {
 		if (player.getCoins() < 50) {
-			System.out.println("Portal Interaction, coins: " + player.getCoins());
 			player.allert.setCurrentAnimation(2);
 		} else {
 			this.win = true;

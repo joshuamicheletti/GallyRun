@@ -16,7 +16,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
-public class Model {
+public class Model implements IModel {
 	private int drawCount;
 	private int VBOid;
 	protected int TEXVBOid;
@@ -35,9 +35,9 @@ public class Model {
 	
 	private int animationPosition;
 	
-	public Texture tex;
-	public Shader shader;
-	public Shader bbShader;
+	protected Texture tex;
+	protected Shader shader;
+	protected Shader bbShader;
 	
 	private Matrix4f scale;
 	private Matrix4f rotation;
@@ -180,7 +180,7 @@ public class Model {
 		// max amount of frames in any animation
 		this.maxAnimationSteps = 0;
 		// list of frames per animation
-		this.animationFrames = new ArrayList();
+		this.animationFrames = new LinkedList<Integer>();
 		
 		// opacity of the model
 		this.opacity = 1;
@@ -339,7 +339,7 @@ public class Model {
 	}
 	
 	// method to adapt the ratio of the model to match the ratio of the texture
-	public void adaptToTexture() {
+	private void adaptToTexture() {
 		if (this.tex.getWidth() > this.tex.getHeight()) { // if the width is larger than the height
 			// keep the width
 			this.borderX = 0.5f;
@@ -369,7 +369,7 @@ public class Model {
 	}
 	
 	// method to adapt the ratio of a model to match the ratio of a sprite and find the amount of frames per animation within a spritesheet
-	public void adaptToSheet(int steps, int animations) {
+	private void adaptToSheet(int steps, int animations) {
 		// animation steps (amount of frames for the current animation)
 		this.animationSteps = steps;
 		// max animation steps (amount of frames for the longest animation in the sheet, amount of columns)
@@ -524,48 +524,6 @@ public class Model {
 				this.animation = 0;
 				this.animationPosition = 0;
 			}
-		}
-	}
-	
-	public void setRunning() {
-		if (this.animation != 1) {
-			this.animation = 1;
-			this.animationPosition = 0;
-		}
-	}
-	
-	public void setJumping() {
-		if (this.animation != 2) {
-			this.animation = 2;
-			this.animationPosition = 0;
-		}
-	}
-	
-	public void setMidAir() {
-		if (this.animation != 3) {
-			this.animation = 3;
-			this.animationPosition = 0;
-		}
-	}
-	
-	public void setFalling() {
-		if (this.animation != 4) {
-			this.animation = 4;
-			this.animationPosition = 0;
-		}
-	}
-	
-	public void setGoingToSleep() {
-		if (this.animation != 6) {
-			this.animation = 6;
-			this.animationPosition = 0;
-		}
-	}
-	
-	public void setSleeping() {
-		if (this.animation != 7) {
-			this.animation = 7;
-			this.animationPosition = 0;
 		}
 	}
 	

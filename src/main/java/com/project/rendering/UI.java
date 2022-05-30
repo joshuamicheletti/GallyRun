@@ -1,30 +1,23 @@
 package com.project.rendering;
 
 import java.util.List;
-
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
 import com.project.entities.Player;
 
 // class for rendering UI elements
-public class UI {
-	
-	
+public class UI implements IUI {
 	private float width; // width of the window
 	private float height; // height of the window
 	
 	// UI elements
 	private Model hpBar; // hp bar container
 	private Model currentHP; // hp bar
-	private Model doubleJump; // icon for the double jump powerup
+	private Model doubleJump; // icon for the double jump power up
 	private Model coin; // coin icon
 	private Model coinCounter; // counter of collected coins
-	private Model winCounter;
-	private Model winScreen;
-	
-	private int winTimer;
-	
+	private Model winCounter; // counter of the count down for when the game is won
+	private Model winScreen; // win screen for when the game is won
+							
+	private int winTimer; // counter of seconds for the win count down
 	
 	// Constructor
 	public UI(float width, float height) {
@@ -68,9 +61,10 @@ public class UI {
 	// UI rendering method
 	public void renderUI(Camera camera, Player player) {
 		// store the camera position
-		Vector3f cameraPosition = camera.getPosition();
+		float cameraPositionX = camera.getX();
+		float cameraPositionY = camera.getY();
 		// place the camera at the center
-		camera.setPosition(new Vector3f(0, 0, 0));
+		camera.setPosition(0, 0);
 		
 		// get the dimensions of the hp bar container
 		List<Float> boundingBox = this.hpBar.calculateBoundingBox();
@@ -157,16 +151,22 @@ public class UI {
 			this.doubleJump.render(camera, false);
 		}
 		
+		// if the win screen should be displayed
 		if (this.winTimer != 0) {
+			// adjust the position of the counter
 			this.winCounter.setPosition(0, -220);
+			// set the correct number to be displayed
 			this.winCounter.setCurrentAnimation(this.winTimer);
+			// update the change
 			this.winCounter.updateAnimation(true);
+			// render the counter
 			this.winCounter.render(camera, false);
+			// render the win screen
 			this.winScreen.render(camera, false);
 		}
 		
 		// restore the original camera position
-		camera.setPosition(cameraPosition);
+		camera.setPosition(cameraPositionX, cameraPositionY);
 	}
 	
 	// width setter (for when the window is resized)
@@ -184,6 +184,7 @@ public class UI {
 		  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 	}
 	
+	// setter for the win count down timer
 	public void setWinTimer(int number) {
 		this.winTimer = number;
 	}

@@ -92,10 +92,8 @@ public class Entity extends PhysicsBody implements IEntity {
 	
 	// method for initializing the bounding box depending on the model size
 	private void initializeBBSize() {
-//		List<Vector4f> bbPoints = this.model.calculateBoundingBox();
 		List<Float> bbSize = this.model.calculateBoundingBox();
-//		this.bbW = (bbPoints.get(0).x - this.positionX) * 2;
-//		this.bbH = (bbPoints.get(0).y - this.positionY) * 2;
+
 		this.bbW = bbSize.get(0);
 		this.bbH = bbSize.get(1);
 	}
