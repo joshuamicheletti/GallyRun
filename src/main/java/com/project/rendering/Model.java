@@ -4,11 +4,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,9 +31,9 @@ public class Model implements IModel {
 	
 	private int animationPosition;
 	
-	protected Texture tex;
-	protected Shader shader;
-	protected Shader bbShader;
+	protected ITexture tex;
+	protected IShader shader;
+	protected IShader bbShader;
 	
 	private Matrix4f scale;
 	private Matrix4f rotation;
@@ -186,7 +182,7 @@ public class Model implements IModel {
 		this.opacity = 1;
 	}
 	
-	public void render(Camera camera, boolean debug) {
+	public void render(ICamera camera, boolean debug) {
 		// calculate the model matrix (S * R * T) and store it in the target matrix
 		this.calculateModelMatrix();
 		
@@ -509,20 +505,6 @@ public class Model implements IModel {
 				// replace the texture UV buffer with the new one
 				glBindBuffer(GL_ARRAY_BUFFER, this.TEXVBOid);
 				glBufferData(GL_ARRAY_BUFFER, createBuffer(textureUV), GL_STATIC_DRAW);
-			}
-		}
-	}
-	
-	public void setIdle(boolean idle) {
-		if (idle) {
-			if (this.animation != 5) {
-				this.animation = 5;
-				this.animationPosition = 0;
-			}
-		} else {
-			if (this.animation != 0) {
-				this.animation = 0;
-				this.animationPosition = 0;
 			}
 		}
 	}

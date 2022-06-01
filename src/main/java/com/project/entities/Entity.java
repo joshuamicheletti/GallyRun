@@ -1,19 +1,20 @@
 package com.project.entities;
 
 import java.util.List;
-import org.joml.Vector4f;
+
+import com.project.rendering.ICamera;
+import com.project.rendering.IModel;
 import com.project.rendering.Model;
 
 // class for any entity in the game (player, enemies, collectibles)
 public class Entity extends PhysicsBody implements IEntity {
 	// model object to store the sprite of the entity
-	public Model model;
+	public IModel model;
 	// name of the entity
 	protected String name;
 	
 	// flag to check when the entity can do a super jump
 	protected boolean ableToSuperJump;
-	
 	// flag to keep track of whether the entity is to be removed or not
 	protected boolean toRemove;
 	
@@ -90,6 +91,16 @@ public class Entity extends PhysicsBody implements IEntity {
 		this.initializeBBSize();
 	}
 	
+	// wrapper for the render method in model to render to screen the sprite of the entity
+	public void render(ICamera camera, boolean debug) {
+		this.model.render(camera, debug);
+	}
+	
+	// wrapper for the setAnimationSpeed method in model to change the amount of times a frame changes per second
+	public void setAnimationSpeed(float speed) {
+		this.model.setAnimationSpeed(speed);
+	}
+	
 	// method for initializing the bounding box depending on the model size
 	private void initializeBBSize() {
 		List<Float> bbSize = this.model.calculateBoundingBox();
@@ -110,7 +121,6 @@ public class Entity extends PhysicsBody implements IEntity {
 	public boolean isToRemove() {
 		return(this.toRemove);
 	}
-	
 	public void setToRemove() {
 		this.toRemove = true;
 	}

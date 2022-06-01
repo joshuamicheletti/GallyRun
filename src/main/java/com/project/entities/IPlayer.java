@@ -1,5 +1,7 @@
 package com.project.entities;
 
+import com.project.rendering.ICamera;
+
 public interface IPlayer extends IEntity {
 	// methods for setting the animation of the player
 	public void setIdle(boolean idle);
@@ -25,4 +27,10 @@ public interface IPlayer extends IEntity {
 	public void superJump();
 	public boolean canDoubleJump();
 	
+	// method for rendering the allert model of the player
+	public void renderAllert(ICamera camera, boolean debug);
+	// method for loading the animation of the allert for the player
+	public void loadAllert(String filename, int steps, int animations);
+	// method for setting the allert animation
+	public void setAllertCurrentAnimation(int animation);
 }

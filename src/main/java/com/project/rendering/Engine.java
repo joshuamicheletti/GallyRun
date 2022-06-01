@@ -6,12 +6,11 @@ import static org.lwjgl.opengl.GL11.*;
 import java.nio.IntBuffer;
 import java.util.List;
 
-import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 
-import com.project.entities.Entity;
-import com.project.entities.Player;
+import com.project.entities.IEntity;
+import com.project.entities.IPlayer;
 
 // Class for rendering models
 public class Engine implements IEngine {
@@ -23,10 +22,10 @@ public class Engine implements IEngine {
 	private int h;
 	
 	// camera object, used for calculating perspective
-	public Camera camera;
+	public ICamera camera;
 	
 	// object for rendering UI elements
-	public UI ui;
+	public IUI ui;
 	
 	// boolean flag to verify that the engine can render
 	private boolean canRender;
@@ -36,7 +35,7 @@ public class Engine implements IEngine {
 	// model containing the texture of the tileset used for rendering tiles
 	private Tile tileSet;
 	// model containing the texture of the background (skybox)
-	private Model sky;
+	private IModel sky;
 	
 	// number of columns in the tileset
 	private int tileW;
@@ -130,7 +129,7 @@ public class Engine implements IEngine {
 	}
 	
 	// method for rendering
-	public double render(List<Entity> entityBuffer, int[][] world, int[][] background) {
+	public double render(List<IEntity> entityBuffer, int[][] world, int[][] background) {
 		// check the time before rendering
 		double t1 = System.nanoTime();
 		
@@ -175,14 +174,14 @@ public class Engine implements IEngine {
 		// render all the entities
 		for (int i = 0; i < entityBuffer.size(); i++) {
 			// render the model of the specified entity
-			entityBuffer.get(i).model.render(this.camera, this.debug);
+			entityBuffer.get(i).render(this.camera, this.debug);
 			
 			// if the current entity is the player, render the allert box as well
-			if (entityBuffer.get(i) instanceof Player) {
+			if (entityBuffer.get(i) instanceof IPlayer) {
 				// cast the Entity to Player
-				Player player = (Player)entityBuffer.get(i);
+				IPlayer player = (IPlayer)entityBuffer.get(i);
 				// render the allert box
-				player.allert.render(this.camera, this.debug);
+				player.renderAllert(this.camera, this.debug);
 				// store the position of the player in the entityBuffer
 				playerIndex = i;
 			}
@@ -192,7 +191,7 @@ public class Engine implements IEngine {
 		// ------------------ UI ----------------------
 		
 		// render the UI elements
-		this.ui.renderUI(this.camera, (Player)entityBuffer.get(playerIndex));
+		this.ui.renderUI(this.camera, (IPlayer)entityBuffer.get(playerIndex));
 		
 		// swap buffers for the next render
 		glfwSwapBuffers(this.window);
@@ -238,33 +237,30 @@ public class Engine implements IEngine {
 		}
 	}
 	
-	
+	// wrapper method for UI
+	public void setWinTimer(int timer) {
+		this.ui.setWinTimer(timer);
+	}
 	
 	// SETTERS AND GETTERS
 	public void enableRender() {
 		this.canRender = true;
 	}
-	
 	public boolean canRender() {
 		return(this.canRender);
 	}
-	
-	public Camera getCamera() {
+	public ICamera getCamera() {
 		return(this.camera);
 	}
-	
 	public boolean getDebug() {
 		return(this.debug);
 	}
-	
 	public void setDebug(boolean flag) {
 		this.debug = flag;
 	}
-	
 	public int getTileSize() {
 		return(this.tileSize);
 	}
-	
 	public void setTileSize(int size) {
 		this.tileSize = size;
 	}

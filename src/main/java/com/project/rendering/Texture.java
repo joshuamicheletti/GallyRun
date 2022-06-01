@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
 
-public class Texture {
+public class Texture implements ITexture {
 	// variable to store the id number of the texture given by OpenGL
 	private int id;
 	// width of the texture

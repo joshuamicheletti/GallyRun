@@ -3,12 +3,12 @@ package com.project.entities;
 public class Enemy extends Entity {
 	
 	protected boolean movingRight;
-	protected Player player;
+	protected IPlayer player;
 	protected int damage;
 	protected int behaviour;
 	protected float speed;
 	
-	public Enemy(Player player) {
+	public Enemy(IPlayer player) {
 		this.movingRight = false;
 		this.player = player;
 		this.damage = 25;

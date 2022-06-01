@@ -3,15 +3,15 @@ package com.project.game;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 
-import com.project.entities.Player;
-import com.project.rendering.Engine;
+import com.project.entities.IPlayer;
+import com.project.rendering.IEngine;
 
 // class that takes user inputs and controls the window and the player
 public class Controller {
 	// player object
-	private Player player;
+	private IPlayer player;
 	// engine object
-	private Engine engine;
+	private IEngine engine;
 	
 	// movement speed for the player
 	private float speed;
@@ -25,7 +25,7 @@ public class Controller {
 	private double sleepTime;
 	
 	// Constructor
-	public Controller(Player player, Engine engine) {
+	public Controller(IPlayer player, IEngine engine) {
 		// get a reference for the player
 		this.player = player;
 		// get a reference for the engine
@@ -43,7 +43,6 @@ public class Controller {
 		this.idleTime = System.nanoTime() / (double)1000000000L;
 		this.sleepTime = System.nanoTime() / (double)1000000000L;
 	}
-	
 	
 	// method for polling events from the input devices 
 	public void pollEvents(long window) {

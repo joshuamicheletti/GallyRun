@@ -1,6 +1,5 @@
 package com.project.game;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +19,7 @@ import static org.lwjgl.openal.ALC10.*;
 
 
 public class Game {
-	private List<Entity> entityBuffer; // list containing all the entities in the game
+	private List<IEntity> entityBuffer; // list containing all the entities in the game
 	
 	private int worldSizeX; // size of the world in tiles
 	private int worldSizeY; // size of the world in tiles
@@ -34,11 +33,11 @@ public class Game {
 	private Controller controller; // controller object to listen to inputs for the controls
 	private long window; // id of the window object
 	
-	private double winTimer;
+	private double winTimer; // variable to keep track of the time when the player wins
 	
-	private Mixer mixer;
+	private Mixer mixer; // object to store and play songs
 	
-	private long audioContext;
+	private long audioContext; // variables to handle OpenAL context and devices
 	private long audioDevice;
 	
 	// Constructor
@@ -47,8 +46,8 @@ public class Game {
 		this.initWindow();
 		
 		// initialize the buffers
-		this.entityBuffer = new ArrayList<Entity>();
-		this.worldHitboxes = new ArrayList<Hitbox>();
+		this.entityBuffer = new LinkedList<IEntity>();
+		this.worldHitboxes = new LinkedList<Hitbox>();
 		
 		// initialize the timer
 		this.timer = new Timer();
@@ -76,16 +75,17 @@ public class Game {
 		}
 		
 		this.mixer = new Mixer();
+		// load the songs for the game
+		this.loadSongs();
 		
 		// load the starting tiles
 		this.loadStartingEntities();
-		
 		// load the starting entities
 		this.loadStartingTiles();
 		
 		// initialize the controller that controls the player
-		this.controller = new Controller((Player)this.findByName("player", this.entityBuffer), this.engine);
-		
+		this.controller = new Controller((IPlayer)this.findByName("player", this.entityBuffer), this.engine);
+		// initialize the winTimer to 0
 		this.winTimer = 0;
 	}
 	
@@ -96,11 +96,11 @@ public class Game {
 			// makes the updates happen only after the tick time has passed (60 ticks per second, every 1/60s)
 			while(this.timer.elapsed()) {
 				// listen for inputs from the user
-				this.controller.pollEvents(this.window);
+				this.controller.pollEvents(this.window); // CONTROLLER
 				// update the entities accordingly
-				this.updateEntities();
+				this.updateEntities();					 // MODEL
 				// allow the renderer to render on the window (this allows to lock the framerate to the tick rate, but not vice versa
-				this.engine.enableRender();
+				this.engine.enableRender();				 // VIEW
 			}
 			
 			// if the engine can render to screen (once every 1/60s)
@@ -109,10 +109,6 @@ public class Game {
 				double time = this.engine.render(this.entityBuffer, this.world, this.background);
 				// print the frame time and fps info
 				this.timer.fps(time);
-			}
-			
-			if (this.winTimer != 0) {
-				this.executeWin();
 			}
 		}
 		
@@ -128,8 +124,8 @@ public class Game {
 	public void updateEntities() {
 		// scroll through the entities
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
-			Entity current = this.entityBuffer.get(i);
-			
+			IEntity current = this.entityBuffer.get(i);
+			// remove any entity that is tagged to be removed
 			if (current.isToRemove()) {
 				entityBuffer.remove(i);
 				i--;
@@ -142,15 +138,17 @@ public class Game {
 				
 				// update the timers on the player
 				if (current instanceof Player) {
-					Player player = (Player)current;
+					IPlayer player = (Player)current;
 					player.calculateState();
 				}
 				
+				// check whether the end portal notices that the player won
 				if (current instanceof Portal) {
 					Portal portal = (Portal)current;
 					
 					if (portal.getWin() && this.winTimer == 0) {
 						this.winTimer = System.nanoTime() / 1000000000L;
+						this.executeWin();
 					}
 				}
 				
@@ -164,7 +162,7 @@ public class Game {
 				// if we're updating the position of the player
 				if (current instanceof Player) {
 					// move the camera according to the new position of the player
-					this.engine.camera.setPosition(-current.model.getX(), -current.model.getY());
+					this.engine.camera.setPosition(-current.getX(), -current.getY());
 				}
 				
 				// update the animation of the entity
@@ -229,81 +227,85 @@ public class Game {
 			engine.setWindowSize(width, height);
 		}
 	};
+
+	// method for loading the songs to be played in the game
+	private void loadSongs() {
+		// load the 3 songs
+		this.mixer.uploadSong("./assets/sounds/normalTheme.ogg", true); // normal theme
+		this.mixer.uploadSong("./assets/sounds/winTheme.ogg", true);    // winning theme
+		this.mixer.uploadSong("./assets/sounds/bossTheme2.ogg", true);  // boss theme
+		// play the normal overworld theme
+		this.mixer.playSong(0);
+	}
 	
 	// method for loading the entities when the game loads
 	private void loadStartingEntities() {
 		int mapX = -this.worldSizeX / 2 * this.engine.getTileSize();
 		int mapY = (-this.worldSizeY / 2 + 5) * this.engine.getTileSize();
 		
-		// creating the entity objects
+		// create, setup and load every entity in the game
+		// Player
 		Player player = new Player();
-		Enemy enemy = new Enemy(player);
-		Enemy enemy2 = new Enemy(player);
-		Enemy enemy3 = new Enemy(player);
-		Boss boss = new Boss(player, this.entityBuffer, this.mixer);
-		
-		// giving them a name
 		player.setName("player");
-		enemy.setName("enemy");
-		enemy2.setName("enemy2");
-		enemy3.setName("enemy3");
-		boss.setName("boss");
-		
-		// setting the parameters of each object
 		player.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
-		player.model.setAnimationSpeed(10f);
+		player.setAnimationSpeed(10f);
 		player.setPosition(mapX + 1300, mapY + 1753);
 		player.setScale(0.5f);
-//		player.model.setBBScale(0.75f, 1f);
 		player.setBBWidth(player.getBBWidth() * 0.75f);
-		player.setBBHeight(player.getBBHeight() * 1f);
-		player.allert.loadAnimationAndAdapt("./assets/textures/allert.png", 2, 3);
+		player.loadAllert("./assets/textures/allert.png", 2, 3);
 		player.setSleep(true);
+		this.entityBuffer.add(player);
 		
+		// First enemy
+		Enemy enemy = new Enemy(player);
+		enemy.setName("enemy");
 		enemy.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
-		enemy.model.setAnimationSpeed(10f);
+		enemy.setAnimationSpeed(10f);
 		enemy.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
 		enemy.setScale(0.5f);
 		enemy.setBBWidth(enemy.getBBWidth() * 0.75f);
 		enemy.setBehaviour(1);
+		this.entityBuffer.add(enemy);
 		
+		// Second enemy
+		Enemy enemy2 = new Enemy(player);
+		enemy2.setName("enemy2");
 		enemy2.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
-		enemy2.model.setAnimationSpeed(10f);
-//		enemy2.setPosition(mapX + 59 * this.engine.getTileSize(), mapY + 2500);
+		enemy2.setAnimationSpeed(10f);
 		enemy2.setPosition(mapX + 1700, mapY + 1160);
 		enemy2.setScale(0.5f);
 		enemy2.setBBWidth(enemy2.getBBWidth() * 0.75f);
 		enemy2.setBehaviour(0);
+		this.entityBuffer.add(enemy2);
 		
+		// Third enemy
+		Enemy enemy3 = new Enemy(player);
+		enemy3.setName("enemy3");
 		enemy3.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
-		enemy3.model.setAnimationSpeed(10f);
+		enemy3.setAnimationSpeed(10f);
 		enemy3.setPosition(mapX + 79 * this.engine.getTileSize(), mapY + 50 * this.engine.getTileSize());
 		enemy3.setScale(0.5f);
 		enemy3.setBBWidth(enemy3.getBBWidth() * 0.75f);
 		enemy3.setSpeed(5);
 		enemy3.setBehaviour(1);
+		this.entityBuffer.add(enemy3);
 		
+		// Boss
+		Boss boss = new Boss(player, this.entityBuffer, this.mixer);
+		boss.setName("boss");
 		boss.loadAnimationAndAdapt("./assets/textures/boss2.png", 2, 2);
-		boss.model.setAnimationSpeed(10f);
+		boss.setAnimationSpeed(10f);
 		boss.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
 		boss.setScale(1.5f);
 		boss.setBBWidth(boss.getBBWidth() * 0.75f);
-		
-		DoubleJump powerup = new DoubleJump();
-		powerup.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18 + 5) * this.engine.getTileSize());
-		
-		this.entityBuffer.add(player);
-		this.entityBuffer.add(enemy);
-		this.entityBuffer.add(enemy2);
-		this.entityBuffer.add(enemy3);
-		this.entityBuffer.add(powerup);
 		this.entityBuffer.add(boss);
 		
-		Collectible portal = new Portal();
+		// Double jump powerup
+		DoubleJump powerup = new DoubleJump();
+		powerup.setPosition((-this.worldSizeX / 2 + 49) * this.engine.getTileSize(), (-this.worldSizeY / 2 + 18 + 5) * this.engine.getTileSize());
+		this.entityBuffer.add(powerup);
 		
-		portal.setPosition(mapX + 1300, mapY + 1753);
-		this.entityBuffer.add(portal);
-		
+		// Coins
 		for (int i = 0; i < 10; i++) {
 			Coin coin = new Coin();
 			coin.setPosition((-this.worldSizeX / 2)     * this.engine.getTileSize() + ((31 + (i % 2)) * this.engine.getTileSize()),
@@ -322,7 +324,7 @@ public class Game {
 		Coin coin2 = new Coin();
 		coin2.setPosition(mapX + 67 * this.engine.getTileSize(), mapY + 41 * this.engine.getTileSize());
 		this.entityBuffer.add(coin2);
-		
+	
 		Coin coin3 = new Coin();
 		coin3.setPosition(mapX + 93 * this.engine.getTileSize(), mapY + 55 * this.engine.getTileSize());
 		this.entityBuffer.add(coin3);
@@ -330,21 +332,27 @@ public class Game {
 		Coin coin4 = new Coin();
 		coin4.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 48 * this.engine.getTileSize());
 		this.entityBuffer.add(coin4);
+		
 		Coin coin5 = new Coin();
 		coin5.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 42 * this.engine.getTileSize());
 		this.entityBuffer.add(coin5);
+		
 		Coin coin6 = new Coin();
 		coin6.setPosition(mapX + 91 * this.engine.getTileSize(), mapY + 36 * this.engine.getTileSize());
 		this.entityBuffer.add(coin6);
+		
 		Coin coin7 = new Coin();
 		coin7.setPosition(mapX + 90 * this.engine.getTileSize(), mapY + 30 * this.engine.getTileSize());
 		this.entityBuffer.add(coin7);
+		
 		Coin coin8 = new Coin();
 		coin8.setPosition(mapX + 89 * this.engine.getTileSize(), mapY + 24 * this.engine.getTileSize());
 		this.entityBuffer.add(coin8);
+		
 		Coin coin9 = new Coin();
 		coin9.setPosition(mapX + 88 * this.engine.getTileSize(), mapY + 18 * this.engine.getTileSize());
 		this.entityBuffer.add(coin9);
+		
 		Coin coin10 = new Coin();
 		coin10.setPosition(mapX + 86 * this.engine.getTileSize(), mapY + 14 * this.engine.getTileSize());
 		this.entityBuffer.add(coin10);
@@ -352,12 +360,6 @@ public class Game {
 		Coin coin11 = new Coin();
 		coin11.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 15 * this.engine.getTileSize());
 		this.entityBuffer.add(coin11);		
-		
-		this.mixer.uploadSong("./assets/sounds/normalTheme.ogg", true);
-		this.mixer.uploadSong("./assets/sounds/winTheme.ogg", true);
-		this.mixer.uploadSong("./assets/sounds/bossTheme2.ogg", true);
-		
-		this.mixer.playSong(0);
 	}
 	
 	// method for loading the starting tiles that compose the world
@@ -368,54 +370,60 @@ public class Game {
 		
 		// create a background structure, this will not have hitboxes and will function as a background for the foreground tiles
 		Structure background = new Structure();
-		background.loadStructure("./assets/world/adventure pack/background.str");
-		background.applyStructure(mapX, mapY, this.background);
+		background.loadStructure("./assets/world/adventure pack/background.str", 0);
+		background.applyStructure(mapX, mapY, this.background, null);
 		
 		// additional structures to add to the existing foreground and background areas for ease of use
 		Structure jumpPower = new Structure();
-		jumpPower.loadStructure("./assets/world/adventure pack/jumpPower.str");
-		jumpPower.applyStructure(mapX + 31, mapY + 25, this.world);
-		jumpPower.applyStructure(mapX + 32, mapY + 25, this.world);
+		jumpPower.loadStructure("./assets/world/adventure pack/jumpPower.str", 0);
+		jumpPower.applyStructure(mapX + 31, mapY + 25, this.world, null);
+		jumpPower.applyStructure(mapX + 32, mapY + 25, this.world, null);
 		
 		Structure tree = new Structure();
-		tree.loadStructureWithHitbox("./assets/world/adventure pack/trees.str", this.engine.getTileSize());
-		tree.applyStructureWithHitbox(mapX + 3, mapY + 32, this.world, this.worldHitboxes);
+		tree.loadStructure("./assets/world/adventure pack/trees.str", this.engine.getTileSize());
+		tree.applyStructure(mapX + 3, mapY + 32, this.world, this.worldHitboxes);
 		
 		Structure treeBackground = new Structure();
-		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str");
-		treeBackground.applyStructure(mapX + 3, mapY + 32, this.background);	
+		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str", 0);
+		treeBackground.applyStructure(mapX + 3, mapY + 32, this.background, null);	
 		
 		Structure platformTree = new Structure();
-		platformTree.loadStructureWithHitbox("./assets/world/adventure pack/platformTree.str", this.engine.getTileSize());
-		platformTree.applyStructureWithHitbox(mapX + 54, mapY + 36, this.world, this.worldHitboxes);
+		platformTree.loadStructure("./assets/world/adventure pack/platformTree.str", this.engine.getTileSize());
+		platformTree.applyStructure(mapX + 54, mapY + 36, this.world, this.worldHitboxes);
 		
 		Structure platformTreeB = new Structure();
-		platformTreeB.loadStructure("./assets/world/adventure pack/platformTreeB.str");
-		platformTreeB.applyStructure(mapX + 54, mapY + 36, this.background);
+		platformTreeB.loadStructure("./assets/world/adventure pack/platformTreeB.str", 0);
+		platformTreeB.applyStructure(mapX + 54, mapY + 36, this.background, null);
 		
 		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
 		Structure map = new Structure();
-		map.loadStructureWithHitbox("./assets/world/adventure pack/map.str", this.engine.getTileSize());
-		map.applyStructureWithHitbox(mapX, mapY, this.world, this.worldHitboxes);
+		map.loadStructure("./assets/world/adventure pack/map.str", this.engine.getTileSize());
+		map.applyStructure(mapX, mapY, this.world, this.worldHitboxes);
 	}
 	
-	
+	// method to trigger a win
 	public void executeWin() {
+		// check the current time
 		double current = System.nanoTime() / 1000000000L;
+		// check the time passed since the player won
 		double delta = current - this.winTimer;
-		
+		// if the win triggered
 		if (delta != 0) {
+			// truncate the time to its integer value
 			int displayNumber = (int)delta;
-			this.engine.ui.setWinTimer(10 - displayNumber);
+			// display the time left before the game closes
+			this.engine.setWinTimer(10 - displayNumber);
 			
+			// if 10s passed since the player won
 			if (delta >= 10) {
+				// close the window
 				glfwSetWindowShouldClose(this.window, true);
 			}
 		}
 	}
 	
 	// method for finding an entity in the entityBuffer by name
-	public Entity findByName(String name, List<Entity> entityBuffer) {
+	public IEntity findByName(String name, List<IEntity> entityBuffer) {
 		for (int i = 0; i < entityBuffer.size(); i++) {
 			if (entityBuffer.get(i).getName() == name) {
 				return(entityBuffer.get(i));

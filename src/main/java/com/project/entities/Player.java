@@ -1,5 +1,6 @@
 package com.project.entities;
 
+import com.project.rendering.ICamera;
 import com.project.rendering.Model;
 import com.project.sound.Sound;
 
@@ -169,7 +170,6 @@ public class Player extends Entity implements IPlayer{
 	}
 	
 	// methods for setting the animation state of the player (normal, idling, going to sleep, sleeping or crouching)
-	
 	public void setIdle(boolean idle) {
 		this.idle = idle;
 		this.sleeping = false;
@@ -299,5 +299,18 @@ public class Player extends Entity implements IPlayer{
 	// method to check if the player can double jump
 	public boolean canDoubleJump() {
 		return(this.canDoubleJump);
+	}
+	
+	// wrapper method to render the allert model
+	public void renderAllert(ICamera camera, boolean debug) {
+		this.allert.render(camera, debug);
+	}
+	// wrapper method to load the animation of the allert
+	public void loadAllert(String filename, int steps, int animations) {
+		this.allert.loadAnimationAndAdapt(filename, steps, animations);
+	}
+	// wrapper method to set the current animation of the allert
+	public void setAllertCurrentAnimation(int animation) {
+		this.allert.setCurrentAnimation(animation);
 	}
 }

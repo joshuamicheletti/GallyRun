@@ -7,13 +7,13 @@ import com.project.sound.Mixer;
 public class Boss extends Enemy {
 	
 	private int health;
-	private List<Entity> entityBuffer;
+	private List<IEntity> entityBuffer;
 	private boolean damaged;
 	private double damagedTimer;
 	private boolean triggered;
 	private Mixer mixer;
 	
-	public Boss(Player player, List<Entity> entityBuffer, Mixer mixer) {
+	public Boss(IPlayer player, List<IEntity> entityBuffer, Mixer mixer) {
 		super(player);
 		
 		this.mixer = mixer;
@@ -84,7 +84,7 @@ public class Boss extends Enemy {
 		float distanceToPlayer = 0;
 		
 		if (!this.triggered) {
-			distanceToPlayer = (float)Math.sqrt(Math.pow(this.player.model.getX() - this.model.getX(), 2) + Math.pow(this.player.model.getY() - this.model.getY(), 2));
+			distanceToPlayer = (float)Math.sqrt(Math.pow(this.player.getX() - this.getX(), 2) + Math.pow(this.player.getY() - this.getY(), 2));
 			
 			if (distanceToPlayer <= 500) {
 				this.mixer.playSong(2);
@@ -101,7 +101,7 @@ public class Boss extends Enemy {
 					this.applyForce(-this.speed, 0f);
 				}
 			} else if (behaviour == 1) {
-				if (this.model.getX() < this.player.model.getX()) {
+				if (this.getX() < this.player.getX()) {
 					this.applyForce(this.speed, 0f);
 				} else {
 					this.applyForce(-this.speed, 0f);

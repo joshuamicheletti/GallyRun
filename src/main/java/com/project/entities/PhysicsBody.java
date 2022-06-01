@@ -9,15 +9,15 @@ public abstract class PhysicsBody implements IPhysicsBody {
 	private float mass;
 	private boolean canCollide;
 	
+	// variables to keep track of the position, previous position and soon-to-be position
 	protected float positionX;
 	protected float positionY;
-	
 	protected float newPositionX;
 	protected float newPositionY;
-	
 	protected float previousPositionX;
 	protected float previousPositionY;
 	
+	// width and height of the bounding box
 	protected float bbW;
 	protected float bbH;
 	
@@ -39,10 +39,12 @@ public abstract class PhysicsBody implements IPhysicsBody {
 	// gravity force applied to the entity (used for physics)
 	protected float gravity;
 	
+	// flags to keep track of the direction the body is facing
 	protected boolean facingRight;
-	
+	// and whether or not is in the air
 	protected boolean airborne;
 	
+	// Constructor
 	public PhysicsBody() {
 		this.positionX = 0;
 		this.positionY = 0;
@@ -82,6 +84,7 @@ public abstract class PhysicsBody implements IPhysicsBody {
 		this.airborne = true;
 	}
 	
+	// method for checking collisions with other PhysicsBodies
 	public void checkCollision(List<IPhysicsBody> bodies, boolean sort) {
 		// if this entity can collide with other entities and hitboxes
 		if (this.canCollide) {

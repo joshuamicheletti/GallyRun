@@ -17,7 +17,7 @@ public class Portal extends Collectible {
 	
 	public void applyEffect(Player player) {
 		if (player.getCoins() < 50) {
-			player.allert.setCurrentAnimation(2);
+			player.setAllertCurrentAnimation(2);
 		} else {
 			this.win = true;
 		}
@@ -39,6 +39,4 @@ public class Portal extends Collectible {
 	public boolean getWin() {
 		return(this.win);
 	}
-	
-	
 }

@@ -1,7 +1,8 @@
 package com.project.rendering;
 
 import java.util.List;
-import com.project.entities.Player;
+
+import com.project.entities.IPlayer;
 
 // class for rendering UI elements
 public class UI implements IUI {
@@ -9,13 +10,13 @@ public class UI implements IUI {
 	private float height; // height of the window
 	
 	// UI elements
-	private Model hpBar; // hp bar container
-	private Model currentHP; // hp bar
-	private Model doubleJump; // icon for the double jump power up
-	private Model coin; // coin icon
-	private Model coinCounter; // counter of collected coins
-	private Model winCounter; // counter of the count down for when the game is won
-	private Model winScreen; // win screen for when the game is won
+	private IModel hpBar; // hp bar container
+	private IModel currentHP; // hp bar
+	private IModel doubleJump; // icon for the double jump power up
+	private IModel coin; // coin icon
+	private IModel coinCounter; // counter of collected coins
+	private IModel winCounter; // counter of the count down for when the game is won
+	private IModel winScreen; // win screen for when the game is won
 							
 	private int winTimer; // counter of seconds for the win count down
 	
@@ -59,7 +60,7 @@ public class UI implements IUI {
 	
 	
 	// UI rendering method
-	public void renderUI(Camera camera, Player player) {
+	public void renderUI(ICamera camera, IPlayer player) {
 		// store the camera position
 		float cameraPositionX = camera.getX();
 		float cameraPositionY = camera.getY();
