@@ -2,7 +2,6 @@ package com.project.entities;
 
 import java.util.List;
 
-import com.project.rendering.ICamera;
 import com.project.rendering.IModel;
 import com.project.rendering.Model;
 
@@ -39,6 +38,7 @@ public class Entity extends PhysicsBody implements IEntity {
 	}
 	
 	// override of the behaviours in case of collisions
+	@Override
 	protected void hitTop(Object target) {
 		if (target instanceof Hitbox) {		// if the object that the entity collided with from the top is a hitbox
 			Hitbox h = (Hitbox)target;
@@ -48,22 +48,23 @@ public class Entity extends PhysicsBody implements IEntity {
 			}
 		}
 	}
+	@Override
 	protected boolean collision(Object target) {
 		if (target instanceof Collectible) { // if the object that the entity collided with is a collectible, don't fix the entity's
 			return(false);					 // position (goes through the collectible)
 		}
 		return(true);
 	}
-	
 	// override the checkCollision method to keep track of the states where the entity is airborne or able to superjump
+	@Override
 	public void checkCollision(List<IPhysicsBody> bodies, boolean sort) {
 		// the entity not able to superjump until proven that it can
 		this.ableToSuperJump = false;
 		
 		super.checkCollision(bodies, sort);
 	}
-
 	// override the calculatePosition method to update the position of the model for rendering
+	@Override
 	public void calculatePosition() {
 		super.calculatePosition();
 		this.model.setPosition(this.positionX, this.positionY);
@@ -90,15 +91,11 @@ public class Entity extends PhysicsBody implements IEntity {
 		this.model.loadAnimationAndAdapt(filename, steps, animations);
 		this.initializeBBSize();
 	}
+
 	
-	// wrapper for the render method in model to render to screen the sprite of the entity
-	public void render(ICamera camera, boolean debug) {
-		this.model.render(camera, debug);
-	}
-	
-	// wrapper for the setAnimationSpeed method in model to change the amount of times a frame changes per second
-	public void setAnimationSpeed(float speed) {
-		this.model.setAnimationSpeed(speed);
+	// method to get the model of the entity
+	public IModel getModel() {
+		return(this.model);
 	}
 	
 	// method for initializing the bounding box depending on the model size

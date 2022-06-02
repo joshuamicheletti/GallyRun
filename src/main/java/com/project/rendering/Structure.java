@@ -10,6 +10,7 @@ import java.util.Scanner;
 
 import com.project.entities.Hitbox;
 
+// class that implements a structure object, which is a collection of tiles
 public class Structure implements IStructure {
 	// matrix for storing the tiles
 	private int[][] tiles;

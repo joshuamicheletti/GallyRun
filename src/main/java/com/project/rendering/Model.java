@@ -12,53 +12,46 @@ import org.joml.Matrix4f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 
+// class that implements a Model to render
 public class Model implements IModel {
-	private int drawCount;
-	private int VBOid;
-	protected int TEXVBOid;
-	private int INDid;
+	private int drawCount; // counter of draw calls necessary to render the model
+	private int VBOid; // id of the Vertex Buffer Array that stores the vertices of the model
+	protected int TEXVBOid; // id of the Vertex Buffer Array that stores the UVs of the texture
+	private int INDid; // id of the Element Array Buffer that stores the indices of the vertices in order to be rendered
 	
-	private int bbINDid;
-	private int bbPINDid;
+	private int bbINDid; // id of the Element Array Buffer that stores the indices of the vertices in order to render lines for debug
+	private int bbPINDid; // id of the Element Array Buffer that stores the indices of the vertices in order to render points for debug
 	
-	private float x;
+	private float x; // the model's position coordinates
 	private float y;
+	private float rotationValue; // rotation amount by the Z axis
+	private float scaleValue; // scale amount (uniform in every axis)
+	private float scaleMul; // scale multiplier (always applied regardless of the scaleValue)
 	
-	private float rotationValue;
-	private float scaleValue;
+	private Matrix4f scale; // scale matrix
+	private Matrix4f rotation; // rotation matrix
+	private Matrix4f translation; // translation matrix
+	private Matrix4f target; // Model matrix (S * R * T)
 	
-	private int animationSteps;
+	protected ITexture tex; // texture object
+	protected IShader shader; // shader object
+	protected IShader bbShader; // bounding box shader object
 	
-	private int animationPosition;
-	
-	protected ITexture tex;
-	protected IShader shader;
-	protected IShader bbShader;
-	
-	private Matrix4f scale;
-	private Matrix4f rotation;
-	private Matrix4f translation;
-	private Matrix4f target;
-	
-	private float scaleMul;
-	
-	private int counter;
-	
-	private float animationSpeed;
-	
-	private float borderX;
+	private float borderX; // size of the model
 	private float borderY;
 	
-	private int animation;
+	private int animationSteps; // amount of frames in an animation
+	private int animationPosition; // current frame in the animation
+	private int counter; // frame counter to sync animations
+	private float animationSpeed; // frames per second of the animation
+	private int animation; // current animation index
+	private int animationsCount; // counter of animations available
+	private int maxAnimationSteps; // max number of frames for the longest animation in the sheet
+	private List<Integer> animationFrames; // list of amount of frames for each animation
 	
-	private int animationsCount;
+	private float opacity; // opacity of the model
 	
-	private int maxAnimationSteps;
-	
-	private List<Integer> animationFrames;
-	
-	private float opacity;
-	
+	// Constructor
 	public Model() {
 		// vertices to make a square to fit the texture
 		float[] vertices = new float[] {
@@ -253,17 +246,6 @@ public class Model implements IModel {
 		
 		return(buffer);
 	}
-	
-	// debug method to print a matrix
-	private void printMatrix(Matrix4f mat)  {
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				System.out.print(mat.get(j, i) + " ");
-			}
-			System.out.print("\n");
-		}
-	}
-	
 	
 	// method for setting the position / translation of the model
 	public void setPosition(float x, float y) {
@@ -527,34 +509,31 @@ public class Model implements IModel {
 	
 	// method for calculating the boundingBox of the actual rendered model
 	public List<Float> calculateBoundingBox() {
-		this.calculateModelMatrix();
+		this.calculateModelMatrix(); // calculate the model matrix
 		
-		Vector4f position1 = new Vector4f( this.borderX,  this.borderY, 1, 1);
+		Vector4f position1 = new Vector4f( this.borderX,  this.borderY, 1, 1); // create 2 vertices that contain the size of the borders
 		Vector4f position3 = new Vector4f(-this.borderX, -this.borderY, 1, 1);
 		
-		position1.mul(this.target, position1);
-		position3.mul(this.target, position3);
+		position1.mul(this.target, position1); // multiply the vertices by the model matrix to obtain the same border coordinates but
+		position3.mul(this.target, position3); // in world coordinates instead
 		
 		List<Float> boundingBox = new LinkedList<Float>();
-		
-		boundingBox.add(Math.abs(position1.x - position3.x));
-		boundingBox.add(Math.abs(position1.y - position3.y));
+		boundingBox.add(Math.abs(position1.x - position3.x)); // calculate and store the width and height of the bounding box
+		boundingBox.add(Math.abs(position1.y - position3.y)); // in world coordinates
 		
 		return(boundingBox);		
 	}
 	
+	// getters and setters
 	public List<Integer> getFrames() {
 		return(this.animationFrames);
 	}
-	
 	public float getScaleMul() {
 		return(this.scaleValue * this.scaleMul);
 	}
-	
 	public void setOpacity(float value) {
 		this.opacity = value;
 	}
-	
 	public float getOpacity() {
 		return(this.opacity);
 	}

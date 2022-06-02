@@ -11,8 +11,7 @@ import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.openal.ALC10.ALC_DEFAULT_DEVICE_SPECIFIER;
 import static org.lwjgl.openal.ALC10.alcGetString;
 
-//import static org.lwjgl.system.MemoryAccessJNI.free;
-
+// class that implements a sound object, to store and reproduce sound files
 public class Sound implements ISound {
 	private int bufferID;
 	private int sourceID;

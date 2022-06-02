@@ -17,7 +17,7 @@ import com.project.sound.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.openal.ALC10.*;
 
-
+// class that implements a game
 public class Game {
 	private List<IEntity> entityBuffer; // list containing all the entities in the game
 	
@@ -29,13 +29,13 @@ public class Game {
 	private List<Hitbox> worldHitboxes; // list containing all the hitboxes of the tiles
 	
 	private Timer timer; // timer for monitoring frametimes, framerate and for regulating tickrate
-	private Engine engine; // engine object to render entities and tiles
+	private IEngine engine; // engine object to render entities and tiles
 	private Controller controller; // controller object to listen to inputs for the controls
 	private long window; // id of the window object
 	
 	private double winTimer; // variable to keep track of the time when the player wins
 	
-	private Mixer mixer; // object to store and play songs
+	private IMixer mixer; // object to store and play songs
 	
 	private long audioContext; // variables to handle OpenAL context and devices
 	private long audioDevice;
@@ -131,14 +131,16 @@ public class Game {
 				i--;
 			} else {
 				// update the AI of the enemy
-				if (current instanceof Enemy) {
-					Enemy currentEnemy = (Enemy)current;
+				if (current instanceof IEnemy) {
+					IEnemy currentEnemy = (IEnemy)current;
 					currentEnemy.control();
 				}
 				
 				// update the timers on the player
 				if (current instanceof Player) {
 					IPlayer player = (Player)current;
+					System.out.println("Player: (" + player.getX() + ", " + player.getY() + ")");
+					System.out.println("Player: " + player.isAirborne());
 					player.calculateState();
 				}
 				
@@ -162,7 +164,7 @@ public class Game {
 				// if we're updating the position of the player
 				if (current instanceof Player) {
 					// move the camera according to the new position of the player
-					this.engine.camera.setPosition(-current.getX(), -current.getY());
+					this.engine.getCamera().setPosition(-current.getX(), -current.getY());
 				}
 				
 				// update the animation of the entity
@@ -200,22 +202,23 @@ public class Game {
 		glfwSetFramebufferSizeCallback(this.window, this.resizeWindow);
 		
 		// AUDIO
+		// get the default audio device
 		String defaultDeviceName = alcGetString(0, ALC_DEFAULT_DEVICE_SPECIFIER);
 		
-		if (defaultDeviceName == null) {
-			System.out.println("No audio device found");
-		} else {
-			this.audioDevice = alcOpenDevice(defaultDeviceName);
+		if (defaultDeviceName == null) { // if there isn't any available audio device
+			System.out.println("No audio device found"); // notify it
+		} else { // otherwise
+			this.audioDevice = alcOpenDevice(defaultDeviceName); // open the default audio device and store it
 			
 			int[] attributes = {0};
-			this.audioContext = alcCreateContext(audioDevice, attributes);
+			this.audioContext = alcCreateContext(audioDevice, attributes); // create an OpenAL audio context
 			
-			alcMakeContextCurrent(this.audioContext);
+			alcMakeContextCurrent(this.audioContext); // make the context current
 			
-			ALCCapabilities alcCapabilities = ALC.createCapabilities(this.audioDevice);
+			ALCCapabilities alcCapabilities = ALC.createCapabilities(this.audioDevice); // create OpenAL audio capabilities for the device
 			ALCapabilities alCapabilities = AL.createCapabilities(alcCapabilities);
 			
-			if (!alCapabilities.OpenAL10) {
+			if (!alCapabilities.OpenAL10) { // check that the right version of OpenAL is supported by the audio device
 				assert false : "Audio library not supported";
 			}
 		}
@@ -245,47 +248,43 @@ public class Game {
 		
 		// create, setup and load every entity in the game
 		// Player
-		Player player = new Player();
+		IPlayer player = new Player();
 		player.setName("player");
 		player.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
-		player.setAnimationSpeed(10f);
-		player.setPosition(mapX + 1300, mapY + 1753);
-		player.setScale(0.5f);
 		player.setBBWidth(player.getBBWidth() * 0.75f);
-		player.loadAllert("./assets/textures/allert.png", 2, 3);
+		player.getModel().setAnimationSpeed(10f);
+		player.setPosition(mapX + 1300, mapY + 27 * this.engine.getTileSize() + 25.1f);
+		player.getAllert().loadAnimationAndAdapt("./assets/textures/allert.png", 2, 3);
 		player.setSleep(true);
 		this.entityBuffer.add(player);
-		
+
 		// First enemy
-		Enemy enemy = new Enemy(player);
+		IEnemy enemy = new Enemy(player);
 		enemy.setName("enemy");
 		enemy.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
-		enemy.setAnimationSpeed(10f);
-		enemy.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
-		enemy.setScale(0.5f);
 		enemy.setBBWidth(enemy.getBBWidth() * 0.75f);
+		enemy.getModel().setAnimationSpeed(10f);
+		enemy.setPosition(mapX + 61 * this.engine.getTileSize(), mapY + 2500);
 		enemy.setBehaviour(1);
 		this.entityBuffer.add(enemy);
 		
 		// Second enemy
-		Enemy enemy2 = new Enemy(player);
+		IEnemy enemy2 = new Enemy(player);
 		enemy2.setName("enemy2");
 		enemy2.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
-		enemy2.setAnimationSpeed(10f);
-		enemy2.setPosition(mapX + 1700, mapY + 1160);
-		enemy2.setScale(0.5f);
 		enemy2.setBBWidth(enemy2.getBBWidth() * 0.75f);
+		enemy2.getModel().setAnimationSpeed(10f);
+		enemy2.setPosition(mapX + 1700, mapY + 1160);
 		enemy2.setBehaviour(0);
 		this.entityBuffer.add(enemy2);
 		
 		// Third enemy
-		Enemy enemy3 = new Enemy(player);
+		IEnemy enemy3 = new Enemy(player);
 		enemy3.setName("enemy3");
 		enemy3.loadAnimationAndAdapt("./assets/textures/enemy.png", 2, 2);
-		enemy3.setAnimationSpeed(10f);
-		enemy3.setPosition(mapX + 79 * this.engine.getTileSize(), mapY + 50 * this.engine.getTileSize());
-		enemy3.setScale(0.5f);
 		enemy3.setBBWidth(enemy3.getBBWidth() * 0.75f);
+		enemy3.getModel().setAnimationSpeed(10f);
+		enemy3.setPosition(mapX + 79 * this.engine.getTileSize(), mapY + 50 * this.engine.getTileSize());
 		enemy3.setSpeed(5);
 		enemy3.setBehaviour(1);
 		this.entityBuffer.add(enemy3);
@@ -294,10 +293,9 @@ public class Game {
 		Boss boss = new Boss(player, this.entityBuffer, this.mixer);
 		boss.setName("boss");
 		boss.loadAnimationAndAdapt("./assets/textures/boss2.png", 2, 2);
-		boss.setAnimationSpeed(10f);
-		boss.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
-		boss.setScale(1.5f);
 		boss.setBBWidth(boss.getBBWidth() * 0.75f);
+		boss.getModel().setAnimationSpeed(10f);
+		boss.setPosition(mapX + 97 * this.engine.getTileSize(), mapY + 9 * this.engine.getTileSize());
 		this.entityBuffer.add(boss);
 		
 		// Double jump powerup
@@ -369,34 +367,34 @@ public class Game {
 		int mapY = -this.worldSizeY / 2;
 		
 		// create a background structure, this will not have hitboxes and will function as a background for the foreground tiles
-		Structure background = new Structure();
+		IStructure background = new Structure();
 		background.loadStructure("./assets/world/adventure pack/background.str", 0);
 		background.applyStructure(mapX, mapY, this.background, null);
 		
 		// additional structures to add to the existing foreground and background areas for ease of use
-		Structure jumpPower = new Structure();
+		IStructure jumpPower = new Structure();
 		jumpPower.loadStructure("./assets/world/adventure pack/jumpPower.str", 0);
 		jumpPower.applyStructure(mapX + 31, mapY + 25, this.world, null);
 		jumpPower.applyStructure(mapX + 32, mapY + 25, this.world, null);
 		
-		Structure tree = new Structure();
+		IStructure tree = new Structure();
 		tree.loadStructure("./assets/world/adventure pack/trees.str", this.engine.getTileSize());
 		tree.applyStructure(mapX + 3, mapY + 32, this.world, this.worldHitboxes);
 		
-		Structure treeBackground = new Structure();
+		IStructure treeBackground = new Structure();
 		treeBackground.loadStructure("./assets/world/adventure pack/treesB.str", 0);
 		treeBackground.applyStructure(mapX + 3, mapY + 32, this.background, null);	
 		
-		Structure platformTree = new Structure();
+		IStructure platformTree = new Structure();
 		platformTree.loadStructure("./assets/world/adventure pack/platformTree.str", this.engine.getTileSize());
 		platformTree.applyStructure(mapX + 54, mapY + 36, this.world, this.worldHitboxes);
 		
-		Structure platformTreeB = new Structure();
+		IStructure platformTreeB = new Structure();
 		platformTreeB.loadStructure("./assets/world/adventure pack/platformTreeB.str", 0);
 		platformTreeB.applyStructure(mapX + 54, mapY + 36, this.background, null);
 		
 		// create a foreground structure, this will contain the tiles that can be collided with, and will function as the interactive part of the map
-		Structure map = new Structure();
+		IStructure map = new Structure();
 		map.loadStructure("./assets/world/adventure pack/map.str", this.engine.getTileSize());
 		map.applyStructure(mapX, mapY, this.world, this.worldHitboxes);
 	}
@@ -412,7 +410,7 @@ public class Game {
 			// truncate the time to its integer value
 			int displayNumber = (int)delta;
 			// display the time left before the game closes
-			this.engine.setWinTimer(10 - displayNumber);
+			this.engine.getUI().setWinTimer(10 - displayNumber);
 			
 			// if 10s passed since the player won
 			if (delta >= 10) {

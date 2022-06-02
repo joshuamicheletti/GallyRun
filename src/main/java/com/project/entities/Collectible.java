@@ -1,14 +1,17 @@
 package com.project.entities;
 
+// abstract class to implement collectibles (coins, powerups, portals)
 public abstract class Collectible extends Entity {
+	// Constructor
 	public Collectible() {
-		this.setScale(0.25f);
-		this.setGravity(0);
-		this.model.setAnimationSpeed(10f);
+//		this.setScale(0.25f); // decrease the rendering scale
+		this.setGravity(0); // disable gravity for collectibles
+		this.model.setAnimationSpeed(10f); // set the animation speed to 10 fps
 	}
 	
-	public void applyEffect(Player player) {
+	// method to apply an effect to the player when it collects this collectible
+	public void applyEffect(IPlayer player) {
 		System.out.println("Apply an effect to the player");
-		this.setToRemove();
+		this.setToRemove(); // set the collectible to be removed
 	}
 }

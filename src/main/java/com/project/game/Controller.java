@@ -181,7 +181,7 @@ public class Controller {
 			double deltaSleep = timeNow - this.sleepTime;
 			
 			// if 5s passed without player inputs
-			if (delta >= 5.0) {
+			if (delta >= 5.0 && !player.isSleeping()) {
 				// enable idling
 				this.player.setIdle(true);
 				// if 9s passed
@@ -194,7 +194,7 @@ public class Controller {
 			}
 			
 			// if 30s passed without player inputs
-			if (deltaSleep >= 30.0) {
+			if (deltaSleep >= 30.0 && !player.isSleeping()) {
 				// enable the state of going to sleep
 				this.player.setGoingToSleep(true);
 				// if 32s passed without player inputs

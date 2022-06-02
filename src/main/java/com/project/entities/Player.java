@@ -1,21 +1,22 @@
 package com.project.entities;
 
-import com.project.rendering.ICamera;
+import com.project.rendering.IModel;
 import com.project.rendering.Model;
+import com.project.sound.ISound;
 import com.project.sound.Sound;
 
 // class to implement a player object that will act as the playable character
 public class Player extends Entity implements IPlayer{
 	// model object for the small effects next to the player (ZZZ, 50 coins needed)
-	public Model allert;
+	public IModel allert;
 	// sound effect for when the player gets hit
-	private Sound hitSfx;
+	private ISound hitSfx;
 	// sound effect for when the player hits an enemy
-	private Sound attackSfx;
+	private ISound attackSfx;
 	// sound effect for when the player jumps
-	private Sound jumpSfx;
+	private ISound jumpSfx;
 	// sound effect for when the player super jumps
-	private Sound superJumpSfx;
+	private ISound superJumpSfx;
 	
 	// flags to keep track of the animation state of the player
 	private boolean idle;
@@ -48,6 +49,7 @@ public class Player extends Entity implements IPlayer{
 		this.sleeping = false;
 		this.goingToSleep = false;
 		this.crouching = false;
+		this.airborne = false;
 		
 		// initialize the coins to 0
 		this.coins = 0;
@@ -60,6 +62,9 @@ public class Player extends Entity implements IPlayer{
 		this.hp = 200;
 		// initialize the damaged state to false
 		this.damaged = false;
+		
+		// adjust the scale
+		this.setScale(0.5f);
 		
 		// load all the sound effects
 		this.hitSfx = new Sound("./assets/sounds/hit.ogg", false);
@@ -301,16 +306,13 @@ public class Player extends Entity implements IPlayer{
 		return(this.canDoubleJump);
 	}
 	
-	// wrapper method to render the allert model
-	public void renderAllert(ICamera camera, boolean debug) {
-		this.allert.render(camera, debug);
+	// method to get the allert model
+	public IModel getAllert() {
+		return(this.allert);
 	}
-	// wrapper method to load the animation of the allert
-	public void loadAllert(String filename, int steps, int animations) {
-		this.allert.loadAnimationAndAdapt(filename, steps, animations);
-	}
-	// wrapper method to set the current animation of the allert
-	public void setAllertCurrentAnimation(int animation) {
-		this.allert.setCurrentAnimation(animation);
+	
+	// method to check if the player is sleeping
+	public boolean isSleeping() {
+		return(this.sleeping);
 	}
 }

@@ -1,9 +1,8 @@
 package com.project.entities;
 
-import com.project.rendering.ICamera;
+import com.project.rendering.IModel;
 
 public interface IEntity extends IPhysicsBody {
-	
 	// setters and getters for the name
 	public void setName(String name);
 	public String getName();
@@ -16,10 +15,8 @@ public interface IEntity extends IPhysicsBody {
 	public void loadAnimationAndAdapt(String filename, int steps, int animations);
 	// wrapper for the setScale method in Model (and updating the Bounding Box accordingly)
 	public void setScale(float scale);
-	// wrapper for the render method in Model
-	public void render(ICamera camera, boolean debug);
-	// wrapper for the setAnimationSpeed method in Model
-	public void setAnimationSpeed(float speed);
+	// method to get the model of the entity
+	public IModel getModel();
 	
 	// getter for the ableToSuperJump variable (to check whether the entity can superjump or not)
 	public boolean canSuperJump();

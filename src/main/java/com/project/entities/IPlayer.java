@@ -1,6 +1,6 @@
 package com.project.entities;
 
-import com.project.rendering.ICamera;
+import com.project.rendering.IModel;
 
 public interface IPlayer extends IEntity {
 	// methods for setting the animation of the player
@@ -8,6 +8,8 @@ public interface IPlayer extends IEntity {
 	public void setSleep(boolean sleep);
 	public void setGoingToSleep(boolean goingToSleep);
 	public void setCrouching(boolean crouching);
+	// method to check if the player is sleeping
+	public boolean isSleeping();
 	
 	// methods for calculating the damage taken by the player, its HP and the damaged state
 	public void calculateState();
@@ -27,10 +29,6 @@ public interface IPlayer extends IEntity {
 	public void superJump();
 	public boolean canDoubleJump();
 	
-	// method for rendering the allert model of the player
-	public void renderAllert(ICamera camera, boolean debug);
-	// method for loading the animation of the allert for the player
-	public void loadAllert(String filename, int steps, int animations);
-	// method for setting the allert animation
-	public void setAllertCurrentAnimation(int animation);
+	// method for getting the allert model
+	public IModel getAllert();
 }

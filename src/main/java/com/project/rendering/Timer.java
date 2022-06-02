@@ -1,5 +1,6 @@
 package com.project.rendering;
 
+// class to implement a timer that keeps track of rendering times
 public class Timer {
 	
 	private double frameCap;
@@ -8,21 +9,22 @@ public class Timer {
 	private double frameTime;
 	private int frames;
 	
+	// Constructor
 	public Timer() {
-		this.frameCap = 1.0 / 60.0;
-		
-		this.time = this.getTime();
-		this.unprocessed = 0;
+		this.frameCap = 1.0 / 60.0; // initialize the target framerate to 60 fps
+		this.time = this.getTime(); // get the current time
+		// set the variables for calculating the FPS to 0
+		this.unprocessed = 0; 
 		this.frameTime = 0;
 		this.frames = 0;
 	}
 	
-	
+	// method for getting the current time
 	public double getTime() {
 		return((double)System.nanoTime()) / (double)1000000000L;
 	}
 
-	
+	// method for setting the target FPS
 	public void setFramerate(double fps) {
 		if (fps == 0) {
 			this.frameCap = 0;
@@ -31,6 +33,7 @@ public class Timer {
 		}
 	}
 	
+	// method for checking if enough time passed between 2 frames
 	public boolean elapsed() {
 		boolean answer = false;
 		
@@ -54,6 +57,7 @@ public class Timer {
 		return(answer);
 	}
 	
+	// method for counting and printing FPS
 	public void fps(double time) {
 		if (this.frameTime >= 1.0) {
 			this.frameTime = 0;

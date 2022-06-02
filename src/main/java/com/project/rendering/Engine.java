@@ -147,14 +147,14 @@ public class Engine implements IEngine {
 		// ----------------- SKYBOX --------------------
 		
 		// store the current camera position
-		float cameraPositionX = camera.getX();
-		float cameraPositionY = camera.getY();
+		float cameraPositionX = this.camera.getX();
+		float cameraPositionY = this.camera.getY();
 		// place the camera at the center
-		camera.setPosition(0, 0);
+		this.camera.setPosition(0, 0);
 		// render the skybox
-		this.sky.render(camera, false);
+		this.sky.render(this.camera, false);
 		// restore the previous camera position
-		camera.setPosition(cameraPositionX, cameraPositionY);
+		this.camera.setPosition(cameraPositionX, cameraPositionY);
 		// this process allows the sky to remain at the center of the camera, no matter how it moves
 		
 		
@@ -174,14 +174,14 @@ public class Engine implements IEngine {
 		// render all the entities
 		for (int i = 0; i < entityBuffer.size(); i++) {
 			// render the model of the specified entity
-			entityBuffer.get(i).render(this.camera, this.debug);
+			entityBuffer.get(i).getModel().render(this.camera, this.debug);
 			
 			// if the current entity is the player, render the allert box as well
 			if (entityBuffer.get(i) instanceof IPlayer) {
 				// cast the Entity to Player
 				IPlayer player = (IPlayer)entityBuffer.get(i);
 				// render the allert box
-				player.renderAllert(this.camera, this.debug);
+				player.getAllert().render(this.camera, this.debug);
 				// store the position of the player in the entityBuffer
 				playerIndex = i;
 			}
@@ -237,11 +237,6 @@ public class Engine implements IEngine {
 		}
 	}
 	
-	// wrapper method for UI
-	public void setWinTimer(int timer) {
-		this.ui.setWinTimer(timer);
-	}
-	
 	// SETTERS AND GETTERS
 	public void enableRender() {
 		this.canRender = true;
@@ -251,6 +246,9 @@ public class Engine implements IEngine {
 	}
 	public ICamera getCamera() {
 		return(this.camera);
+	}
+	public IUI getUI() {
+		return(this.ui);
 	}
 	public boolean getDebug() {
 		return(this.debug);

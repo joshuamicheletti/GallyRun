@@ -5,7 +5,9 @@ import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
 import static org.lwjgl.opengl.GL15.glBufferData;
 
+// class that implements a tileSet, which is a collection of tiles (models)
 public class Tile extends Model {
+	// method for loading a tileset
 	public void loadTileSet(String texture) {
 		this.tex.loadImage(texture);
 	}

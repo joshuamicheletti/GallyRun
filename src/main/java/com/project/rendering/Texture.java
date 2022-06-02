@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 
 import org.lwjgl.BufferUtils;
 
+// class that implements a texture object for storing image files and render them
 public class Texture implements ITexture {
 	// variable to store the id number of the texture given by OpenGL
 	private int id;
