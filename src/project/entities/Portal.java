@@ -22,7 +22,7 @@ public class Portal extends Collectible {
 	@Override
 	public void applyEffect(IPlayer player) {
 		if (player.getCoins() < 50) { // if the player has less than 50 coins
-			player.getAllert().setCurrentAnimation(2); // notify the player through its allert that it's missing coins
+			player.getAllert().setCurrentAnimation(2); // notify the player through its alert that it's missing coins
 		} else { // if the player meets the requirements to win
 			this.win = true; // the player wins
 		}

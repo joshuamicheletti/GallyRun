@@ -24,6 +24,7 @@ public interface IModel {
 	public void updateAnimation(boolean direction);
 	// method to set the current animation to be displayed
 	public void setCurrentAnimation(int animation);
+	public int getCurrentAnimation();
 	// method to set the animation speed of the model (fps)
 	public void setAnimationSpeed(float animationSpeed);
 	// method for calculating the bounding box of the model

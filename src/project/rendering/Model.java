@@ -502,6 +502,10 @@ public class Model implements IModel {
 		}
 	}
 	
+	public int getCurrentAnimation() {
+		return(this.animation);
+	}
+	
 	// method for setting the animation speed
 	public void setAnimationSpeed(float animationSpeed) {
 		this.animationSpeed = animationSpeed;

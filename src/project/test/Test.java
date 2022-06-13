@@ -5,9 +5,7 @@ import static org.junit.Assert.*;
 import org.lwjgl.opengl.GL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.openal.ALC10.ALC_DEFAULT_DEVICE_SPECIFIER;
-import static org.lwjgl.openal.ALC10.alcCloseDevice;
 import static org.lwjgl.openal.ALC10.alcCreateContext;
-import static org.lwjgl.openal.ALC10.alcDestroyContext;
 import static org.lwjgl.openal.ALC10.alcGetString;
 import static org.lwjgl.openal.ALC10.alcMakeContextCurrent;
 import static org.lwjgl.openal.ALC10.alcOpenDevice;
@@ -18,7 +16,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
@@ -27,6 +24,8 @@ import org.lwjgl.openal.ALCapabilities;
 import project.entities.*;
 import project.rendering.Engine;
 import project.rendering.IEngine;
+import project.sound.IMixer;
+import project.sound.Mixer;
 
 public class Test {
 	
@@ -39,6 +38,7 @@ public class Test {
 	private List<IEntity> entityBuffer;
 	private List<Hitbox> hitboxList;
 	private IEngine engine;
+	private IMixer mixer;
 	
 	private long window;
 	
@@ -81,6 +81,7 @@ public class Test {
 		this.player.setName("test player");
 		this.player.loadAnimationAndAdapt("./assets/textures/gally5.png", 3, 10);
 		this.player.setPosition(100, 100);
+		this.player.getAllert().loadAnimationAndAdapt("./assets/textures/allert.png", 2, 3);
 		
 		this.enemy = new Enemy(this.player);
 		this.enemy.setName("test enemy");
@@ -102,6 +103,11 @@ public class Test {
 		
 		this.hitboxList = new LinkedList<Hitbox>();
 		this.hitboxList.add(floor);
+		
+		this.mixer = new Mixer();
+		this.mixer.uploadSong("./assets/sounds/normalTheme.ogg", true); // normal theme
+		this.mixer.uploadSong("./assets/sounds/winTheme.ogg", true);    // winning theme
+		this.mixer.uploadSong("./assets/sounds/bossTheme2.ogg", true);  // boss theme
 	}
 	
 	private void draw() {
@@ -128,6 +134,14 @@ public class Test {
 		glfwTerminate();
 	}
 	
+	private void calculatePhysics() {
+		for (IEntity e : this.entityBuffer) {
+			e.calculatePosition();
+			e.checkCollision(new LinkedList<IPhysicsBody>(this.entityBuffer), false);
+			e.checkCollision(new LinkedList<IPhysicsBody>(this.hitboxList), true);
+		}
+	}
+	
 	@org.junit.Test
 	public void animationTest() {
 		setup();
@@ -145,14 +159,29 @@ public class Test {
 		// run a small animation to check that the animation and animation changes work as intended
 		for (int i = 0; i < 150; i++) {
 			this.player.applyForce(-20, 0);
-			this.player.calculatePosition();
-			this.player.checkCollision(new LinkedList<IPhysicsBody>(this.hitboxList), false);
+			calculatePhysics();
 			
 			if (i == 100) {
 				this.player.jump();
 			}
 			
 			draw();
+			
+			if (this.player.isAirborne()) {
+				if (this.player.getVelocityY() > 5) {
+					assertTrue(this.player.getModel().getCurrentAnimation() == 2);
+				} else if (this.player.getVelocityY() < -5) {
+					assertTrue(this.player.getModel().getCurrentAnimation() == 4);
+				} else {
+					assertTrue(this.player.getModel().getCurrentAnimation() == 3);
+				}
+			} else {
+				if (this.player.getVelocityX() > 0.02 || this.player.getVelocityX() < -0.02) {
+					assertTrue(this.player.getModel().getCurrentAnimation() == 1);
+				} else if (this.player.getVelocityX() <= 0.02 && this.player.getVelocityX() >= -0.02) {
+					assertTrue(this.player.getModel().getCurrentAnimation() == 0);
+				}
+			}
 		}
 		
 		shutdown();
@@ -216,15 +245,7 @@ public class Test {
 			// move the entities
 			this.player.applyForce(-50, 0);
 			this.enemy.applyForce(50, 0);
-			// calculate the position and check the collisions for the player
-			this.player.calculatePosition();
-			this.player.checkCollision(new LinkedList<IPhysicsBody>(this.entityBuffer), false);
-			this.player.checkCollision(new LinkedList<IPhysicsBody>(this.hitboxList), true);
-			// calculate the position and check the collisions for the enemy
-			this.enemy.calculatePosition();
-			this.enemy.checkCollision(new LinkedList<IPhysicsBody>(this.entityBuffer), false);
-			this.enemy.checkCollision(new LinkedList<IPhysicsBody>(this.hitboxList), true);
-	
+			calculatePhysics();
 			this.draw();
 		}
 		
@@ -247,6 +268,7 @@ public class Test {
 		this.entityBuffer.remove(this.entity);
 		
 		this.player.setPosition(0, 200);
+		this.player.setGravity(0);
 		
 		// set the enemy's behavior to 0 (move left and right)
 		this.enemy.setPosition(0, 0);
@@ -282,6 +304,7 @@ public class Test {
 			enemy2.control();
 			enemy2.calculatePosition();
 			enemy2.checkCollision(new LinkedList<IPhysicsBody>(this.hitboxList), true);
+
 			
 			if (i == 60) { // at frame 60
 				// check that the enemy2 is still more or less at the position of the player (center)
@@ -297,13 +320,13 @@ public class Test {
 			
 			if (i == 20) { // at frame 20
 				// check that the enemy is moving to the left
-				assertTrue(enemy.getVelocityX() < 0);
+				assertTrue(this.enemy.getVelocityX() < 0);
 			} else if (i == 60) { // at frame 60
 				// check that the enemy is moving to the right
-				assertTrue(enemy.getVelocityX() > 0);
+				assertTrue(this.enemy.getVelocityX() > 0);
 			} else if (i == 150) { // at frame 150
 				// check that the enemy is moving to the left
-				assertTrue(enemy.getVelocityX() < 0);
+				assertTrue(this.enemy.getVelocityX() < 0);
 			}
 			
 			draw();
@@ -314,5 +337,200 @@ public class Test {
 		assertTrue(enemy.getX() > leftWall.getX() && enemy.getX() < rightWall.getX());
 		
 		shutdown();
+	}
+	
+	@org.junit.Test
+	public void collectibleTest() {
+		setup();
+		
+		this.entityBuffer.remove(this.enemy);
+		this.entityBuffer.remove(this.entity);
+		this.player.setPosition(300, 200);
+		
+		Coin coin = new Coin();
+		coin.setPosition(200, 30);
+		this.entityBuffer.add(coin);
+		
+		DoubleJump powerup = new DoubleJump();
+		powerup.setPosition(-200, 30);
+		this.entityBuffer.add(powerup);
+		
+		Portal portal = new Portal();
+		portal.setPosition(0, 30);
+		portal.getModel().setCurrentAnimation(0);
+		this.entityBuffer.add(portal);
+		
+		calculatePhysics();
+		draw();
+		
+		assertTrue(this.player.getCoins() == 0);
+		assertTrue(!coin.isToRemove());
+		
+		this.player.setPosition(200, 30);
+		calculatePhysics();
+		draw();
+		
+		assertTrue(this.player.getCoins() == 1);
+		assertTrue(coin.isToRemove());
+		
+		assertTrue(this.player.canDoubleJump() == false);
+		assertTrue(!powerup.isToRemove());
+		
+		this.player.setPosition(-200, 30);
+		calculatePhysics();
+		draw();
+		
+		assertTrue(this.player.canDoubleJump());
+		assertTrue(powerup.isToRemove());
+		
+		assertTrue(portal.getWin() == false);
+		assertTrue(this.player.getAllert().getCurrentAnimation() == 0);
+		
+		this.player.setPosition(0, 30);
+		calculatePhysics();
+		draw();
+		
+		assertTrue(portal.getWin() == false);
+	
+		
+		assertTrue(this.player.getAllert().getCurrentAnimation() == 2);
+		
+		for (int i = 0; i < 50; i++) {
+			this.player.addCoin();
+		}
+		
+		assertTrue(this.player.getCoins() == 51);
+		
+		calculatePhysics();
+		draw();
+		
+		assertTrue(portal.getWin());
+	
+		shutdown();	
+	}
+	
+	@org.junit.Test
+	public void attackTest() {
+		setup();
+		
+		this.entityBuffer.remove(this.entity);
+		
+		this.player.setPosition(0, 400);
+		this.enemy.setPosition(0, 100);
+		
+		assertTrue(!this.enemy.isToRemove());
+		
+		for (int i = 0; i < 60; i++) {
+			calculatePhysics();
+			
+			if (this.enemy.isToRemove()) {
+				this.entityBuffer.remove(this.enemy);
+			}
+			
+			draw();
+		}
+		
+		assertFalse(this.entityBuffer.contains(this.enemy));
+		assertTrue(this.player.getHP() == 200);
+	
+		shutdown();
+	}
+	
+	@org.junit.Test
+	public void testBoss() {
+		setup();
+		
+		this.entityBuffer.remove(this.enemy);
+		this.entityBuffer.remove(this.entity);
+		this.player.setPosition(-500, 100);
+		this.floor.setBBWidth(4000);
+		this.floor.setPosition(0, -300);
+		
+		Hitbox leftWall = new Hitbox();
+		leftWall.setBBWidth(50);
+		leftWall.setBBHeight(200);
+		leftWall.setPosition(-600, 0);
+		this.hitboxList.add(leftWall);
+		
+		Hitbox rightWall = new Hitbox();
+		rightWall.setBBWidth(50);
+		rightWall.setBBHeight(200);
+		rightWall.setPosition(600, 0);
+		this.hitboxList.add(rightWall);
+		
+		Boss boss = new Boss(this.player, this.entityBuffer, this.mixer);
+		boss.loadAnimationAndAdapt("./assets/textures/boss2.png", 2, 2);
+		boss.setPosition(400, 200);
+		this.entityBuffer.add(boss);
+		
+		boolean checkTrigger = false;
+		float force = 30;
+		
+		for (int i = 0; i < 900; i++) {
+			this.player.applyForce(force, 0);
+			this.player.calculateState();
+			
+			if (this.entityBuffer.contains(boss)) {
+				boss.control();
+			}
+			
+			calculatePhysics();
+			draw();
+			
+			if (boss.isToRemove()) {
+				this.entityBuffer.remove(boss);
+			}
+			
+			if (calculateDistance(this.player, boss) <= 450 && !checkTrigger) {
+				assertTrue(boss.isTriggered());
+				assertTrue(this.mixer.playingSong() == 2);
+				checkTrigger = true;
+			}
+			
+			if (i == 120) {
+				assertTrue(this.player.getHP() == 200 - boss.getDamage());
+				this.player.setPosition(600, 300);
+				force = 0;
+				this.player.setGravity(0);
+			}
+			
+			if (i == 180) {
+				assertTrue(boss.getX() > 0 && boss.getX() < rightWall.getX());
+				this.player.setPosition(-600, 300);
+			}
+			
+			if (i == 600) {
+				assertTrue(boss.getX() < 0 && boss.getX() > leftWall.getX());
+				this.player.setPosition(boss.getX(), 300);
+				this.player.setGravity(1.2f);
+			}
+			
+			if (i == 660) {
+				assertTrue(boss.getVelocityX() > 0);
+				assertTrue(this.entityBuffer.contains(boss));
+				this.player.setPosition(boss.getX(), 300);
+				boss.setForce(0, 0);
+				boss.setVelocity(0, 0);
+			}
+			
+			if (i == 780) {
+				assertTrue(this.entityBuffer.contains(boss));
+				this.player.setPosition(boss.getX(), 300);
+				boss.setForce(0, 0);
+				boss.setVelocity(0, 0);
+			}
+			
+			if (i == 840) {
+				assertTrue(this.entityBuffer.size() > 2);
+				assertFalse(this.entityBuffer.contains(boss));
+				assertTrue(this.mixer.playingSong() == 1);
+			}
+		}
+		
+		shutdown();
+	}
+	
+	private float calculateDistance(IEntity e1, IEntity e2) {
+		return((float)Math.sqrt((Math.pow(e1.getX() - e2.getX(), 2) + (Math.pow(e1.getY() - e2.getY(), 2)))));
 	}
 }
