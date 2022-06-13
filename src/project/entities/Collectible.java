@@ -4,7 +4,6 @@ package project.entities;
 public abstract class Collectible extends Entity {
 	// Constructor
 	public Collectible() {
-//		this.setScale(0.25f); // decrease the rendering scale
 		this.setGravity(0); // disable gravity for collectibles
 		this.model.setAnimationSpeed(10f); // set the animation speed to 10 fps
 	}

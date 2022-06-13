@@ -70,6 +70,12 @@ public class Entity extends PhysicsBody implements IEntity {
 		this.model.setPosition(this.positionX, this.positionY);
 	}
 	
+	@Override
+	public void setPosition(float x, float y) {
+		super.setPosition(x, y);
+		this.model.setPosition(x, y);
+	}
+	
 	// wrapper for the updateAnimation method of the model
 	public void updateAnimation() {
 		this.model.updateAnimation(this.facingRight);

@@ -63,7 +63,7 @@ public abstract class PhysicsBody implements IPhysicsBody {
 		this.canCollide = true;
 		// set the mass to 50
 		this.mass = 50.0f;
-		
+	
 		// initialize the movement variables (force, velocity, acceleration)
 		this.forceX = 0;
 		this.forceY = 0;

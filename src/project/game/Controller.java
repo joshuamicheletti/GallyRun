@@ -48,7 +48,7 @@ public class Controller {
 	public void pollEvents(long window) {
 		// poll the events from the window
 		glfwPollEvents();
-	
+
 		// polar coordinates to apply a force to the player corresponding to the inputs
 		float distance = 0;
 		float direction = 0;

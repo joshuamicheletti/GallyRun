@@ -458,7 +458,7 @@ public class Model implements IModel {
 			float[] textureUV;
 
 			// change frame animationSpeed times per second
-			if ((float)this.counter % Math.round(60 / this.animationSpeed) == 0) {
+			if ((float)this.counter % Math.round(60 / this.animationSpeed) == 0 || this.counter == 1) {
 				if (direction == true) { // if the model is facing right												
 					textureUV = new float[] {										   
 							(1f / this.maxAnimationSteps) * this.animationPosition,       (1f / this.animationsCount) * (this.animation),

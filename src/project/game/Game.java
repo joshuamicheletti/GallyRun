@@ -121,7 +121,7 @@ public class Game {
 	}
 	
 	// Method for updating entities (position, animation)
-	public void updateEntities() {
+	private void updateEntities() {
 		// scroll through the entities
 		for (int i = 0; i < this.entityBuffer.size(); i++) {
 			IEntity current = this.entityBuffer.get(i);
@@ -137,8 +137,8 @@ public class Game {
 				}
 				
 				// update the timers on the player
-				if (current instanceof Player) {
-					IPlayer player = (Player)current;
+				if (current instanceof IPlayer) {
+					IPlayer player = (IPlayer)current;
 					player.calculateState();
 				}
 				
@@ -162,7 +162,7 @@ public class Game {
 				current.checkCollision(new LinkedList<IPhysicsBody>(this.worldHitboxes), true);
 				
 				// if we're updating the position of the player
-				if (current instanceof Player) {
+				if (current instanceof IPlayer) {
 					// move the camera according to the new position of the player
 					this.engine.getCamera().setPosition(-current.getX(), -current.getY());
 				}
@@ -400,7 +400,7 @@ public class Game {
 	}
 	
 	// method to trigger a win
-	public void executeWin() {
+	private void executeWin() {
 		// check the current time
 		double current = System.nanoTime() / 1000000000L;
 		// check the time passed since the player won
@@ -421,7 +421,7 @@ public class Game {
 	}
 	
 	// method for finding an entity in the entityBuffer by name
-	public IEntity findByName(String name, List<IEntity> entityBuffer) {
+	private IEntity findByName(String name, List<IEntity> entityBuffer) {
 		for (int i = 0; i < entityBuffer.size(); i++) {
 			if (entityBuffer.get(i).getName() == name) {
 				return(entityBuffer.get(i));
