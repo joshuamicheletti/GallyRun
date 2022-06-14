@@ -191,7 +191,9 @@ public class Engine implements IEngine {
 		// ------------------ UI ----------------------
 		
 		// render the UI elements
-		this.ui.renderUI(this.camera, (IPlayer)entityBuffer.get(playerIndex));
+		if (playerIndex >= 0) {
+			this.ui.renderUI(this.camera, (IPlayer)entityBuffer.get(playerIndex));
+		}
 		
 		// swap buffers for the next render
 		glfwSwapBuffers(this.window);
