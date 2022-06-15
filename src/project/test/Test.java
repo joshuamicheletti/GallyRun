@@ -59,8 +59,8 @@ public class Test {
 	// parameter to set the speed of the simulation
 	// increasing this number will allow the tester to see what is actually happening in every test
 	// if you want to see what is happening, the recommended value is 32 (ms of delay between every frame)
-//	private int wait = 0;  // fast
-	private int wait = 32; // normal speed
+	private int wait = 0;  // fast
+//	private int wait = 32; // normal speed
 	
 	
 	// method to setup the environment for testing
@@ -314,10 +314,14 @@ public class Test {
 		
 		// check that the player didn't go to the other side
 		assertTrue(this.player.getX() > 0);
+		// check that the enemy didn't go to the other side
+		assertTrue(this.enemy.getX() < 0);
 		// check that the player is to the right of the enemy
 		assertTrue(this.enemy.getX() < this.player.getX());
 		// check that the player is above the floor
 		assertTrue(this.player.getY() > this.floor.getY());
+		// check that the enemy is above the floor
+		assertTrue(this.enemy.getY() > this.floor.getY());
 		// check that the player lost hp
 		assertTrue(this.player.getHP() < 200);
 		
